@@ -10,13 +10,15 @@
     <div class="flex flex-col md:flex-row min-h-screen" x-data="{ sidebarOpen: false }">
         {{-- 移动端顶部导航 --}}
         <div class="md:hidden bg-gray-900 text-white flex items-center justify-between p-4 flex-shrink-0">
-            <h1 class="text-lg font-bold">
-                <a href="{{ route('admin.dashboard') }}">{{ config('app.name') }}</a>
-            </h1>
-            <button @click="sidebarOpen = !sidebarOpen" class="p-2 hover:bg-gray-800 rounded-lg">
-                <svg x-show="!sidebarOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                <svg x-show="sidebarOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
+            <div class="flex items-center">
+                <button @click="sidebarOpen = !sidebarOpen" class="p-2 mr-3 -ml-2 hover:bg-gray-800 rounded-lg">
+                    <svg x-show="!sidebarOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    <svg x-show="sidebarOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                <h1 class="text-lg font-bold">
+                    <a href="{{ route('admin.dashboard') }}">{{ config('app.name') }}</a>
+                </h1>
+            </div>
         </div>
 
         {{-- 侧边栏 --}}
