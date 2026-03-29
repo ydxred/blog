@@ -94,14 +94,14 @@ APP_NAME="ydxred"
 APP_ENV=production
 APP_KEY=base64:你的密钥
 APP_DEBUG=false
-APP_URL=https://www.yourdomain.com
+APP_URL=https://www.ydxred.com
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=blog
 DB_USERNAME=ydxred_blog
-DB_PASSWORD=Ydxred_DB!2026
+DB_PASSWORD=你的数据库密码
 ```
 
 #### 6. 运行迁移和创建软链接
