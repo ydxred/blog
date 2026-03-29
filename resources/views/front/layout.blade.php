@@ -54,10 +54,10 @@
                 </nav>
             </div>
             <div class="flex items-center gap-3 shrink-0">
-                <nav class="flex sm:hidden items-center gap-1 text-sm">
-                    <a href="{{ route('home') }}" class="px-2.5 py-1.5 rounded-lg transition-colors {{ request()->routeIs('home') || request()->routeIs('article.*') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-500 hover:text-blue-600' }}">文</a>
-                    <a href="{{ route('moments') }}" class="px-2.5 py-1.5 rounded-lg transition-colors {{ request()->routeIs('moments') || request()->routeIs('post.*') ? 'bg-teal-50 text-teal-700 font-semibold' : 'text-slate-500 hover:text-teal-600' }}">动</a>
-                    <a href="{{ route('about') }}" class="px-2.5 py-1.5 rounded-lg transition-colors {{ request()->routeIs('about') ? 'bg-amber-50 text-amber-700 font-semibold' : 'text-slate-500 hover:text-amber-600' }}">我</a>
+                <nav class="flex sm:hidden items-center gap-0.5 text-[13px]">
+                    <a href="{{ route('home') }}" class="px-2 py-1.5 rounded-lg transition-colors {{ request()->routeIs('home') || request()->routeIs('article.*') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-500 hover:text-blue-600' }}">博客</a>
+                    <a href="{{ route('moments') }}" class="px-2 py-1.5 rounded-lg transition-colors {{ request()->routeIs('moments') || request()->routeIs('post.*') ? 'bg-teal-50 text-teal-700 font-semibold' : 'text-slate-500 hover:text-teal-600' }}">动态</a>
+                    <a href="{{ route('about') }}" class="px-2 py-1.5 rounded-lg transition-colors {{ request()->routeIs('about') ? 'bg-amber-50 text-amber-700 font-semibold' : 'text-slate-500 hover:text-amber-600' }}">关于我</a>
                 </nav>
                 @auth
                     @if(auth()->user()->isAdmin())
