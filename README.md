@@ -98,7 +98,7 @@ DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=blog
 DB_USERNAME=root
-DB_PASSWORD=你的数据库密码（生产环境建议使用强密码，可直接使用root用户或新建专属用户）
+DB_PASSWORD=你的数据库密码（生产环境建议使用强密码，可直接使用root用户或新建专属用户）（生产环境建议使用强密码，可直接使用root用户或新建专属用户）
 ```
 
 #### 6. 运行迁移和创建软链接
