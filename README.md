@@ -66,6 +66,9 @@ sudo mv composer.phar /usr/local/bin/composer
 ```bash
 sudo systemctl start mariadb
 sudo mysql -e "CREATE DATABASE blog DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+sudo mysql -e "CREATE USER 'ydxred_blog'@'localhost' IDENTIFIED BY 'Ydxred_DB!2026';"
+sudo mysql -e "GRANT ALL PRIVILEGES ON blog.* TO 'ydxred_blog'@'localhost';"
+sudo mysql -e "FLUSH PRIVILEGES;"
 ```
 
 #### 4. 获取代码并安装依赖
@@ -97,8 +100,8 @@ DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=blog
-DB_USERNAME=root
-DB_PASSWORD=你的数据库密码（生产环境建议使用强密码，可直接使用root用户或新建专属用户）
+DB_USERNAME=ydxred_blog
+DB_PASSWORD=Ydxred_DB!2026
 ```
 
 #### 6. 运行迁移和创建软链接
