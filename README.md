@@ -66,8 +66,8 @@ sudo mv composer.phar /usr/local/bin/composer
 ```bash
 sudo systemctl start mariadb
 sudo mysql -e "CREATE DATABASE blog DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mysql -e "CREATE USER 'ydxred_blog'@'localhost' IDENTIFIED BY 'Ydxred_DB!2026';"
-sudo mysql -e "GRANT ALL PRIVILEGES ON blog.* TO 'ydxred_blog'@'localhost';"
+sudo mysql -e "CREATE USER '你的专属数据库用户名'@'localhost' IDENTIFIED BY '你的强密码';"
+sudo mysql -e "GRANT ALL PRIVILEGES ON blog.* TO '你的专属数据库用户名'@'localhost';"
 sudo mysql -e "FLUSH PRIVILEGES;"
 ```
 
