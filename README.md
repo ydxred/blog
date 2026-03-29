@@ -94,7 +94,7 @@ APP_NAME="ydxred"
 APP_ENV=production
 APP_KEY=base64:你的密钥
 APP_DEBUG=false
-APP_URL=https://www.ydxred.com
+APP_URL=https://www.yourdomain.com
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
