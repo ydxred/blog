@@ -6,31 +6,36 @@
     <title>{{ config('app.name') }} - 管理后台</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <div class="flex flex-col md:flex-row min-h-screen" x-data="{ sidebarOpen: false }">
-        {{-- 移动端顶部导航 --}}
-        <div class="md:hidden bg-gray-900 text-white flex items-center justify-between p-4 flex-shrink-0">
-            <div class="flex items-center">
-                <button @click="sidebarOpen = !sidebarOpen" class="p-2 mr-3 -ml-2 hover:bg-gray-800 rounded-lg">
-                    <svg x-show="!sidebarOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    <svg x-show="sidebarOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-                <h1 class="text-lg font-bold">
-                    <a href="{{ route('admin.dashboard') }}">{{ config('app.name') }}</a>
-                </h1>
-            </div>
-        </div>
+<body class="bg-gray-100 min-h-screen overflow-hidden">
+    <div class="flex h-screen bg-gray-100" x-data="{ sidebarOpen: false }">
+        
+        {{-- Mobile Sidebar Overlay --}}
+        <div x-show="sidebarOpen" 
+             x-transition:enter="transition-opacity ease-linear duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-linear duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-40 bg-gray-900/50 md:hidden" 
+             @click="sidebarOpen = false" x-cloak></div>
 
-        {{-- 侧边栏 --}}
-        <aside class="w-full md:w-64 bg-gray-900 text-white flex-shrink-0"
-               :class="{'hidden md:block': !sidebarOpen, 'block': sidebarOpen}">
-            <div class="p-6 hidden md:block">
-                <h1 class="text-xl font-bold">
-                    <a href="{{ route('admin.dashboard') }}">{{ config('app.name') }}</a>
-                </h1>
-                <p class="text-gray-400 text-sm mt-1">管理后台</p>
+        {{-- Sidebar --}}
+        <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 text-white transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-auto flex flex-col"
+               :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}">
+            <div class="p-6 flex items-center justify-between shrink-0">
+                <div>
+                    <h1 class="text-xl font-bold">
+                        <a href="{{ route('admin.dashboard') }}">{{ config('app.name') }}</a>
+                    </h1>
+                    <p class="text-gray-400 text-sm mt-1">管理后台</p>
+                </div>
+                <button @click="sidebarOpen = false" class="md:hidden p-2 text-gray-400 hover:text-white rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
-            <nav class="mt-2 pb-4 md:pb-0">
+            
+            <nav class="flex-1 overflow-y-auto pb-4 custom-scrollbar">
                 <a href="{{ route('admin.dashboard') }}"
                    class="flex items-center px-6 py-3 text-sm {{ request()->routeIs('admin.dashboard') ? 'bg-gray-800 text-white border-l-4 border-blue-500' : 'text-gray-300 hover:bg-gray-800' }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
@@ -66,7 +71,8 @@
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                     关于我
                 </a>
-                <div class="border-t border-gray-700 mt-4 pt-4">
+                
+                <div class="border-t border-gray-700 mt-4 pt-4 mb-4">
                     <a href="{{ route('home') }}"
                        class="flex items-center px-6 py-3 text-sm text-gray-300 hover:bg-gray-800">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
@@ -83,26 +89,57 @@
             </nav>
         </aside>
 
-        {{-- 主内容 --}}
-        <main class="flex-1 p-4 md:p-8 overflow-x-hidden">
-            @if(session('success'))
-                <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                    {{ session('success') }}
+        {{-- Main Content Area --}}
+        <div class="flex-1 flex flex-col min-w-0 bg-gray-100 h-screen">
+            {{-- Mobile Header --}}
+            <header class="md:hidden bg-gray-900 text-white flex items-center justify-between p-4 shrink-0 shadow-md">
+                <div class="flex items-center">
+                    <button @click="sidebarOpen = true" class="p-2 mr-3 -ml-2 hover:bg-gray-800 rounded-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <h1 class="text-lg font-bold">
+                        <a href="{{ route('admin.dashboard') }}">{{ config('app.name') }}</a>
+                    </h1>
                 </div>
-            @endif
+            </header>
 
-            @if($errors->any())
-                <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                    <ul class="list-disc list-inside">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            {{-- Main Scrollable Content --}}
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8">
+                @if(session('success'))
+                    <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg shadow-sm">
+                        {{ session('success') }}
+                    </div>
+                @endif
 
-            @yield('content')
-        </main>
+                @if($errors->any())
+                    <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg shadow-sm">
+                        <ul class="list-disc list-inside">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @yield('content')
+            </main>
+        </div>
     </div>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #374151; 
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #4B5563; 
+        }
+    </style>
 </body>
 </html>
