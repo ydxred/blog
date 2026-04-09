@@ -65,9 +65,14 @@
                 访问记录
             </a>
             <a href="{{ route('admin.settings.about') }}"
-               class="flex items-center px-6 py-3 text-sm {{ request()->routeIs('admin.settings.*') ? 'bg-gray-800 text-white border-l-4 border-blue-500' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+               class="flex items-center px-6 py-3 text-sm {{ request()->routeIs('admin.settings.about') ? 'bg-gray-800 text-white border-l-4 border-blue-500' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 关于我
+            </a>
+            <a href="{{ route('admin.settings.api_wechat') }}"
+               class="flex items-center px-6 py-3 text-sm {{ request()->routeIs('admin.settings.api_wechat') ? 'bg-gray-800 text-white border-l-4 border-blue-500' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                接口与微信
             </a>
 
             <div class="mt-4 border-t border-gray-800 pt-4">

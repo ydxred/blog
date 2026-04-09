@@ -21,6 +21,7 @@
             <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">评论人</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">内容</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">IP与设备</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">来源</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">状态</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">时间</th>
@@ -34,7 +35,13 @@
                         <div class="text-sm font-medium text-gray-800">{{ $comment->nickname }}</div>
                         <div class="text-xs text-gray-400">{{ $comment->email }}</div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-700 max-w-xs truncate">{{ Str::limit($comment->content, 60) }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-700 max-w-xs truncate" title="{{ $comment->content }}">{{ Str::limit($comment->content, 60) }}</td>
+                    <td class="px-6 py-4">
+                        <div class="text-xs text-gray-600 font-mono">{{ $comment->ip_address ?? '未知 IP' }}</div>
+                        <div class="text-xs text-gray-400 mt-1 max-w-[12rem] truncate" title="{{ $comment->user_agent }}">
+                            {{ Str::limit($comment->user_agent ?? '未知设备', 30) }}
+                        </div>
+                    </td>
                     <td class="px-6 py-4 text-sm">
                         @if($comment->commentable)
                             @if($comment->commentable_type === 'App\\Models\\Article')
@@ -86,7 +93,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-12 text-center text-gray-400">暂无评论</td>
+                    <td colspan="7" class="px-6 py-12 text-center text-gray-400">暂无评论</td>
                 </tr>
             @endforelse
         </tbody>

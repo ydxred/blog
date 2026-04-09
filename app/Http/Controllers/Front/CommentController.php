@@ -17,6 +17,9 @@ class CommentController extends Controller
             'content' => 'required|string|max:500',
         ]);
 
+        $validated['ip_address'] = $request->ip();
+        $validated['user_agent'] = $request->userAgent();
+
         $post->comments()->create($validated);
 
         return back()->with('success', '评论已提交，等待审核');
@@ -29,6 +32,9 @@ class CommentController extends Controller
             'email' => 'nullable|email|max:100',
             'content' => 'required|string|max:1000',
         ]);
+
+        $validated['ip_address'] = $request->ip();
+        $validated['user_agent'] = $request->userAgent();
 
         $article->comments()->create($validated);
 

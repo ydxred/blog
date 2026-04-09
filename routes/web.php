@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::post('/profile/api-token', [ProfileController::class, 'generateApiToken'])->name('profile.api_token');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
@@ -63,7 +64,13 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::get('/settings/about', [SettingController::class, 'editAbout'])->name('settings.about');
     Route::post('/settings/about', [SettingController::class, 'updateAbout'])->name('settings.about.update');
 
+    Route::get('/settings/api-wechat', [SettingController::class, 'apiWechat'])->name('settings.api_wechat');
+    Route::post('/settings/api-wechat', [SettingController::class, 'updateApiWechat'])->name('settings.api_wechat.update');
+    Route::post('/settings/api-wechat/generate-token', [SettingController::class, 'generateApiToken'])->name('settings.api_wechat.generate_token');
+
     Route::post('/upload/image', [\App\Http\Controllers\Admin\ImageUploadController::class, 'upload'])->name('upload.image');
+
+    Route::post('/wechat/sync/{article}', [\App\Http\Controllers\Admin\WechatController::class, 'syncArticle'])->name('wechat.sync');
 });
 
 require __DIR__.'/auth.php';

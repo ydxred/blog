@@ -54,6 +54,18 @@ class ProfileController extends Controller
         return back()->with('success', '密码修改成功');
     }
 
+    public function generateApiToken(Request $request)
+    {
+        $user = $request->user();
+        $token = \Illuminate\Support\Str::random(60);
+        
+        $user->update([
+            'api_token' => $token,
+        ]);
+
+        return back()->with('success', 'API Token 已重新生成。');
+    }
+
     public function destroy(Request $request)
     {
         $request->validateWithBag('userDeletion', [

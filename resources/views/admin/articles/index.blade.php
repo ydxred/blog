@@ -66,6 +66,10 @@
                         @if($article->status === 'published')
                             <a href="{{ route('article.show', $article->slug) }}" target="_blank" class="text-gray-500 hover:text-gray-700 text-sm mr-2">查看</a>
                         @endif
+                        <form action="{{ route('admin.wechat.sync', $article) }}" method="POST" class="inline" onsubmit="return confirm('确定要将此文章同步到微信公众号草稿箱吗？')">
+                            @csrf
+                            <button type="submit" class="text-green-600 hover:text-green-800 text-sm mr-2">同步微信</button>
+                        </form>
                         <form action="{{ route('admin.articles.destroy', $article) }}" method="POST" class="inline" onsubmit="return confirm('确定删除此文章？')">
                             @csrf
                             @method('DELETE')
