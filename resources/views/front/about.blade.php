@@ -1,15 +1,13 @@
 @extends('front.layout')
 
 @section('title', '关于我')
+@section('description', '关于这个博客和它的作者。')
 
 @section('hero')
-<div class="relative overflow-hidden border-b border-stone-200/60 bg-white/40 backdrop-blur-sm">
-    <div class="absolute inset-0 bg-gradient-to-b from-amber-50/50 to-transparent"></div>
-    <div class="max-w-5xl mx-auto px-4 sm:px-5 py-12 sm:py-16 relative z-10">
-        <h1 class="text-3xl sm:text-4xl font-title font-bold text-amber-900/90 tracking-tight">关于我</h1>
-        <p class="mt-3 text-stone-500 sm:text-lg max-w-xl leading-relaxed">你好，欢迎来到我的角落。</p>
-    </div>
-</div>
+    <x-front.hero
+        title="关于我"
+        subtitle="你好，欢迎来到我的角落。"
+        theme="amber" />
 @endsection
 
 @section('content')
@@ -23,7 +21,7 @@
                     prose-pre:bg-slate-900 prose-pre:text-slate-50 prose-pre:shadow-sm
                     prose-img:rounded-xl prose-img:ring-1 prose-img:ring-slate-200/60
                     prose-blockquote:border-l-pink-400 prose-blockquote:bg-pink-50/50 prose-blockquote:py-1 prose-blockquote:pr-4 prose-blockquote:rounded-r-lg prose-blockquote:text-slate-600 prose-blockquote:not-italic mt-4">
-            {!! \Illuminate\Support\Str::markdown($content) !!}
+            {!! \App\Services\MarkdownRenderer::toHtml($content, false) !!}
         </div>
     </article>
 </div>

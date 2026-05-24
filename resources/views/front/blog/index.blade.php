@@ -1,37 +1,33 @@
 @extends('front.layout')
 
+@section('title', $currentTag ? '标签：' . $currentTag : '长文与笔记')
+@section('description', '深入的技术探讨、生活感悟以及那些值得长久保留的思考。' . ($currentTag ? '（当前标签：' . $currentTag . '）' : ''))
+
 @section('hero')
-<div class="relative overflow-hidden border-b border-slate-200/60 bg-white/40 backdrop-blur-sm">
-    <div class="absolute inset-0 bg-gradient-to-b from-blue-50/50 to-transparent"></div>
-    <div class="max-w-5xl mx-auto px-4 sm:px-5 py-12 sm:py-16 relative z-10">
-        <h1 class="text-3xl sm:text-4xl font-title font-bold text-blue-900/90 tracking-tight">长文与笔记</h1>
-        <p class="mt-3 text-slate-500 sm:text-lg max-w-xl leading-relaxed">这里沉淀了深入的技术探讨、生活感悟以及一些值得长久保留的思考。</p>
-    </div>
-</div>
+    <x-front.hero
+        title="长文与笔记"
+        subtitle="这里沉淀了深入的技术探讨、生活感悟以及一些值得长久保留的思考。"
+        theme="blue" />
 @endsection
 
 @section('content')
 <div class="max-w-5xl mx-auto">
     @if($tags->count())
-    <div class="flex flex-wrap gap-2.5 mb-10">
+    <nav class="flex flex-wrap gap-2.5 mb-10" aria-label="标签筛选">
         <a href="{{ route('home') }}"
            class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium transition-all {{ !$currentTag ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md shadow-blue-500/20' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:ring-slate-300 hover:bg-slate-50' }}">
             全部
         </a>
         @foreach($tags as $tag)
-            <a href="{{ route('home', ['tag' => $tag->slug]) }}"
-               class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium transition-all {{ $currentTag === $tag->slug ? 'text-white shadow-md' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:ring-slate-300 hover:bg-slate-50' }}"
-               @if($currentTag === $tag->slug) style="background: linear-gradient(135deg, {{ $tag->color }}, {{ $tag->color }}dd); box-shadow: 0 4px 14px -2px {{ $tag->color }}66;" @endif>
-                {{ $tag->name }}
-            </a>
+            <x-front.tag-pill :tag="$tag" :href="route('home', ['tag' => $tag->slug])" :active="$currentTag === $tag->slug" size="lg" />
         @endforeach
-    </div>
+    </nav>
     @endif
 
     <div class="space-y-6">
         @forelse($articles as $article)
             <article class="group relative rounded-2xl bg-white/80 backdrop-blur-sm p-6 sm:p-8 shadow-sm ring-1 ring-slate-200/80 transition-all hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-0.5 overflow-hidden">
-                <div class="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-400 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-400 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true"></div>
                 <a href="{{ route('article.show', $article->slug) }}" class="block">
                     <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500 mb-3 font-medium">
                         <span class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{{ $article->user->name }}</span>

@@ -118,8 +118,7 @@
     </form>
 </div>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
-<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+@vite('resources/js/admin-editor.js')
 <script>
 function articleAutoSave() {
     const STORAGE_KEY = 'article_draft_edit_{{ $article->id }}';

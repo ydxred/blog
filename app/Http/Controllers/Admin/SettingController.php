@@ -54,9 +54,12 @@ class SettingController extends Controller
     public function generateApiToken()
     {
         $user = auth()->user();
-        $user->api_token = \Illuminate\Support\Str::random(60);
+        $plainToken = \Illuminate\Support\Str::random(60);
+        $user->api_token = hash('sha256', $plainToken);
         $user->save();
 
-        return back()->with('success', 'API Token 已重新生成');
+        return back()
+            ->with('success', 'API Token 已重新生成（仅本次显示，请妥善保存）')
+            ->with('plain_api_token', $plainToken);
     }
 }

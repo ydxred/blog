@@ -1,3 +1,135 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ---------- 全局基础 ---------- */
+@layer base {
+    body {
+        font-family: 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+    }
+    .font-title {
+        font-family: 'Noto Serif SC', 'Noto Sans SC', serif;
+    }
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+/* ---------- 公共组件类 ---------- */
+@layer components {
+    .bg-page {
+        background-color: #f8fafc;
+        background-image:
+            radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 0.05) 0, transparent 50%),
+            radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 0.05) 0, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 0.05) 0, transparent 50%);
+    }
+
+    /* social-share 微信弹窗 */
+    .social-share .icon-wechat {
+        position: relative;
+    }
+
+    /* emoji-picker CSS 变量（仅动态发帖页用到） */
+    emoji-picker {
+        --border-radius: 12px;
+        --background: #ffffff;
+        --border-color: #e7e5e4;
+        --input-border-color: #e7e5e4;
+        --indicator-color: #6366f1;
+        --outline-color: #6366f1;
+        height: 300px;
+    }
+}
+
+/* ---------- 文章详情：目录、代码块、复制按钮 ---------- */
+@layer components {
+    #toc ul {
+        list-style: none;
+        padding-left: 1rem;
+    }
+    #toc > ul {
+        padding-left: 0;
+    }
+    #toc li {
+        margin-bottom: 0.6rem;
+    }
+    #toc a {
+        color: #64748b;
+        text-decoration: none;
+        display: block;
+        transition: all 0.2s;
+        line-height: 1.4;
+    }
+    #toc a:hover {
+        color: #4f46e5;
+    }
+    #toc .is-active-link {
+        color: #4f46e5;
+        font-weight: 600;
+    }
+    #toc .is-collapsed {
+        display: none;
+    }
+
+    .prose pre {
+        position: relative;
+        margin: 1.25rem 0;
+        background: #282c34 !important;
+    }
+    .prose pre code.hljs {
+        display: block;
+        padding: 1.1rem 1.25rem;
+        background: transparent;
+        color: #abb2bf;
+        font-size: 0.9em;
+        line-height: 1.6;
+        overflow-x: auto;
+    }
+    .code-lang-tag {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.75rem;
+        padding: 0.1rem 0.55rem;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 0.375rem;
+        color: #94a3b8;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+    }
+    .copy-btn {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        padding: 0.2rem 0.6rem;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 0.375rem;
+        color: #cbd5e1;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        opacity: 0;
+    }
+    .prose pre:hover .copy-btn {
+        opacity: 1;
+    }
+    .copy-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: #fff;
+    }
+    .prose hr {
+        border: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.4), transparent);
+        margin: 2.5rem 0;
+    }
+
+    /* 标签胶囊：用 CSS 变量承载颜色，消灭 inline style 字符串 */
+    .tag-pill {
+        background: linear-gradient(135deg, var(--tag-color, #6366f1), color-mix(in srgb, var(--tag-color, #6366f1) 85%, #000));
+        color: white;
+    }
+}

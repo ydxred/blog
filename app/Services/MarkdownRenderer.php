@@ -19,8 +19,9 @@ class MarkdownRenderer
         $markdown = self::normalizeBlocks($markdown);
 
         $config = [
-            'html_input' => 'allow',
+            'html_input' => 'escape',
             'allow_unsafe_links' => false,
+            'max_nesting_level' => 50,
             'renderer' => [
                 'block_separator' => "\n",
                 'inner_separator' => "\n",

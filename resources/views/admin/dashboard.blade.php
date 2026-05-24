@@ -78,7 +78,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+@vite('resources/js/admin-chart.js')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('visitChart');

@@ -26,13 +26,13 @@ class ApiTokenMiddleware
             $token = substr($token, 7);
         }
 
-        $user = User::where('api_token', $token)->first();
+        $hashed = hash('sha256', $token);
+        $user = User::where('api_token', $hashed)->first();
 
         if (!$user) {
             return response()->json(['message' => 'Unauthorized. Invalid API Token.'], 401);
         }
 
-        // Authenticate the user for the current request
         auth()->login($user);
 
         return $next($request);
