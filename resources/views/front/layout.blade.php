@@ -36,7 +36,7 @@
 </head>
 <body class="min-h-screen flex flex-col bg-page text-slate-800 antialiased">
     <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md shadow-sm">
-        <div class="max-w-5xl mx-auto px-4 sm:px-5 h-[3.25rem] sm:h-14 flex items-center justify-between">
+        <div class="max-w-6xl mx-auto px-4 sm:px-5 h-[3.25rem] sm:h-14 flex items-center justify-between">
             <div class="flex items-center gap-5 sm:gap-8 min-w-0">
                 <a href="{{ route('home') }}" class="flex items-center gap-2.5 font-semibold text-slate-700 truncate group">
                     <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-sm transition-shadow group-hover:shadow-md">
@@ -100,7 +100,7 @@
     <footer class="mt-auto relative z-10">
         <div class="h-px w-full bg-gradient-to-r from-transparent via-slate-300/60 to-transparent"></div>
         <div class="border-t border-slate-200/80 bg-white/60 backdrop-blur-md py-10">
-            <div class="max-w-5xl mx-auto px-4 sm:px-5">
+            <div class="max-w-6xl mx-auto px-4 sm:px-5">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                     <div>
                         <p class="font-title text-lg text-indigo-900/80">{{ config('app.name') }}</p>

@@ -7,7 +7,7 @@
 @section('hero')
 <div class="relative overflow-hidden border-b border-slate-200/60 bg-white/40 backdrop-blur-sm">
     <div class="absolute inset-0 bg-gradient-to-b from-teal-50/50 to-transparent"></div>
-    <div class="max-w-4xl mx-auto px-4 sm:px-5 py-10 sm:py-14 relative z-10">
+    <div class="max-w-5xl mx-auto px-4 sm:px-5 py-10 sm:py-14 relative z-10">
         <h1 class="text-3xl sm:text-4xl font-title font-bold text-teal-900/90 tracking-tight">碎碎念与日常</h1>
         <p class="mt-3 text-slate-500 sm:text-lg max-w-xl leading-relaxed">捕捉瞬间的灵感、生活的切片以及那些无需长篇大论的思绪。</p>
     </div>
@@ -15,7 +15,7 @@
 @endsection
 
 @section('content')
-<div class="max-w-3xl mx-auto">
+<div class="max-w-5xl mx-auto">
     @auth
     <div class="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-7 mb-10 shadow-sm ring-1 ring-slate-200/50" x-data="postForm()">
         <form action="{{ route('post.store') }}" method="POST" enctype="multipart/form-data" x-ref="form">

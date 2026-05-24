@@ -3,7 +3,7 @@
 @section('hero')
 <div class="relative overflow-hidden border-b border-slate-200/60 bg-white/40 backdrop-blur-sm">
     <div class="absolute inset-0 bg-gradient-to-b from-blue-50/50 to-transparent"></div>
-    <div class="max-w-4xl mx-auto px-4 sm:px-5 py-12 sm:py-16 relative z-10">
+    <div class="max-w-5xl mx-auto px-4 sm:px-5 py-12 sm:py-16 relative z-10">
         <h1 class="text-3xl sm:text-4xl font-title font-bold text-blue-900/90 tracking-tight">长文与笔记</h1>
         <p class="mt-3 text-slate-500 sm:text-lg max-w-xl leading-relaxed">这里沉淀了深入的技术探讨、生活感悟以及一些值得长久保留的思考。</p>
     </div>
@@ -11,7 +11,7 @@
 @endsection
 
 @section('content')
-<div class="max-w-3xl mx-auto">
+<div class="max-w-5xl mx-auto">
     @if($tags->count())
     <div class="flex flex-wrap gap-2.5 mb-10">
         <a href="{{ route('home') }}"
