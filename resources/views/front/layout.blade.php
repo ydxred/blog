@@ -40,12 +40,13 @@
         <meta name="twitter:image" content="{{ $metaImage }}">
     @endif
 
-    {{-- 字体 --}}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
+    {{-- favicon --}}
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 
-    {{-- 全局 CSS + JS --}}
+    {{-- DNS 提前预热（Cloudflare） --}}
+    <link rel="dns-prefetch" href="//www.ydxred.com">
+
+    {{-- 全局 CSS + JS（vite 自动生成 preload 资源链） --}}
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/likes.js'])
 
     {{-- 页面级 meta、JSON-LD、额外样式 --}}

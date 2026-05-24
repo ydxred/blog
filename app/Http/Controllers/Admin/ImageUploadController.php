@@ -14,6 +14,7 @@ class ImageUploadController extends Controller
         ]);
 
         $path = $request->file('image')->store('articles', 'public');
+        app(\App\Services\ImageOptimizer::class)->makeWebpSidecar($path);
 
         return response()->json([
             'success' => true,

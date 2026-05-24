@@ -55,6 +55,7 @@ class ArticleController extends Controller
         $coverPath = null;
         if ($request->hasFile('cover_image')) {
             $coverPath = $request->file('cover_image')->store('articles', 'public');
+            app(\App\Services\ImageOptimizer::class)->makeWebpSidecar($coverPath);
         }
 
         $article = Article::create([
@@ -99,6 +100,7 @@ class ArticleController extends Controller
                 Storage::disk('public')->delete($article->cover_image);
             }
             $validated['cover_image'] = $request->file('cover_image')->store('articles', 'public');
+            app(\App\Services\ImageOptimizer::class)->makeWebpSidecar($validated['cover_image']);
         }
 
         $wasPublished = $article->status === 'published';

@@ -35,16 +35,26 @@ class ArticleController extends Controller
             abort(404);
         }
 
-        $article->increment('views_count');
-        
-        // 记录访问详情
-        \App\Models\ArticleVisit::create([
-            'article_id' => $article->id,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'referer' => $request->headers->get('referer'),
-            'user_id' => auth()->id(),
-        ]);
+        // 浏览统计异步化：响应已发回客户端后再写库，不阻塞 TTFB
+        $articleId = $article->id;
+        $ip        = $request->ip();
+        $ua        = $request->userAgent();
+        $referer   = $request->headers->get('referer');
+        $userId    = auth()->id();
+        dispatch(function () use ($articleId, $ip, $ua, $referer, $userId) {
+            try {
+                \App\Models\Article::where('id', $articleId)->increment('views_count');
+                \App\Models\ArticleVisit::create([
+                    'article_id' => $articleId,
+                    'ip_address' => $ip,
+                    'user_agent' => $ua,
+                    'referer'    => $referer,
+                    'user_id'    => $userId,
+                ]);
+            } catch (\Throwable $e) {
+                \Log::warning('article view tracking failed: '.$e->getMessage());
+            }
+        })->afterResponse();
 
         $article->load('user', 'tags', 'approvedComments');
 

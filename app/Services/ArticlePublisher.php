@@ -297,22 +297,23 @@ class ArticlePublisher
 
     /**
      * 解析封面图：支持 UploadedFile / URL / Base64 三种来源。
+     * 落地后自动生成 webp sidecar。
      */
     protected function resolveCoverImage(array $payload): ?string
     {
+        $path = null;
         if (isset($payload['cover_image']) && $payload['cover_image'] instanceof UploadedFile) {
-            return $payload['cover_image']->store('articles', 'public');
+            $path = $payload['cover_image']->store('articles', 'public');
+        } elseif (!empty($payload['cover_image_url'])) {
+            $path = $this->downloadImage($payload['cover_image_url'], 'articles');
+        } elseif (!empty($payload['cover_image_base64'])) {
+            $path = $this->saveBase64Image($payload['cover_image_base64'], 'articles');
         }
 
-        if (!empty($payload['cover_image_url'])) {
-            return $this->downloadImage($payload['cover_image_url'], 'articles');
+        if ($path) {
+            app(\App\Services\ImageOptimizer::class)->makeWebpSidecar($path);
         }
-
-        if (!empty($payload['cover_image_base64'])) {
-            return $this->saveBase64Image($payload['cover_image_base64'], 'articles');
-        }
-
-        return null;
+        return $path;
     }
 
     /**
@@ -397,6 +398,7 @@ class ArticlePublisher
             }
             $filename = $dir . '/' . date('Y/m') . '/' . Str::random(20) . '.' . $ext;
             Storage::disk('public')->put($filename, $data);
+            app(\App\Services\ImageOptimizer::class)->makeWebpSidecar($filename);
             return $filename;
         } catch (\Throwable $e) {
             \Log::warning("downloadImage exception", ['url' => $url, 'msg' => $e->getMessage()]);
@@ -427,6 +429,7 @@ class ArticlePublisher
         }
         $filename = $dir . '/' . date('Y/m') . '/' . Str::random(20) . '.' . $ext;
         Storage::disk('public')->put($filename, $data);
+        app(\App\Services\ImageOptimizer::class)->makeWebpSidecar($filename);
         return $filename;
     }
 

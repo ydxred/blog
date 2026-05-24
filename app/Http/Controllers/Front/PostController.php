@@ -49,8 +49,11 @@ class PostController extends Controller
 
         $imagePaths = [];
         if ($request->hasFile('images')) {
+            $optimizer = app(\App\Services\ImageOptimizer::class);
             foreach ($request->file('images') as $image) {
-                $imagePaths[] = $image->store('posts', 'public');
+                $path = $image->store('posts', 'public');
+                $imagePaths[] = $path;
+                $optimizer->makeWebpSidecar($path);
             }
         }
 

@@ -14,6 +14,7 @@ class ImageController extends Controller
         ]);
 
         $path = $request->file('image')->store('posts', 'public');
+        app(\App\Services\ImageOptimizer::class)->makeWebpSidecar($path);
 
         return response()->json([
             'path' => $path,

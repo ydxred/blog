@@ -205,6 +205,7 @@ class PublishController extends Controller
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('uploads', 'public');
+            app(\App\Services\ImageOptimizer::class)->makeWebpSidecar($path);
         } elseif ($request->filled('image_url')) {
             $path = $this->publisher->fetchRemoteImages('![](' . $request->input('image_url') . ')');
             preg_match('/\(([^)]+)\)/', $path, $m);

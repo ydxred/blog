@@ -47,9 +47,18 @@
 
 ### 8. 前端工程化与 SEO
 - **零 CDN 依赖**：highlight.js / Fancybox / tocbot / EasyMDE / Chart.js / emoji-picker / social-share 全部走 npm + Vite 打包，离线 / 内网 / Cloudflare 抖动都不影响。
+- **字体本地化**：Noto Sans/Serif SC 通过 `@fontsource` 进 Vite，按 `unicode-range` 拆 100+ 分片懒加载，整站告别 Google Fonts 跨墙慢。
 - **按需加载**：首页 ~45 KB（gzip），文章详情 ~120 KB，后台编辑器才会加载 EasyMDE。
 - **SEO**：每页 `meta description` / `canonical` / `og:*` / `twitter:card` 完整；文章详情输出 `BlogPosting` JSON-LD；自动生成 `og-default.png` 默认分享卡。
 - **无障碍**：表单 `<label for>` + `autocomplete`、按钮 `aria-label` / `aria-pressed`、装饰 SVG `aria-hidden`。
+
+### 9. 性能加速 ⚡
+- **HTML 微缓存**：OpenResty `fastcgi_cache` 缓存游客 GET 请求 30 秒，TTFB 从 ~80 ms → **~9 ms**（命中后纯 nginx 响应，零 PHP）。`/admin`、`/login`、有 `*_session` cookie 的请求自动 BYPASS。
+- **图片 WebP 协商**：上传时同步生成 `.webp` sidecar，nginx 根据 `Accept: image/webp` 自动协商，对应 png/jpg **节省 ~60% 带宽**（174 KB → 70 KB 实测）。
+- **Vite 哈希资源 1 年 immutable**：`/build/*.js|css|woff2` 设 `Cache-Control: public, max-age=31536000, immutable`。
+- **OPcache 256 MB + JIT tracing 128 MB**、`realpath_cache 4M`。
+- **PHP-FPM dynamic**：`max_children=20` `start_servers=4` `max_requests=500`，应对 4 倍并发。
+- **浏览统计异步化**：`dispatchAfterResponse` 在响应发完后再写库，TTFB 不受影响。
 
 ---
 
@@ -274,21 +283,92 @@ php artisan tinker
 项目自带 `overtrue/pinyin`，中文标题会自动转拼音 slug。如果失效，看是不是 `composer install --no-dev` 时把它当 dev 依赖排除掉了（项目内已设为生产依赖，正常 install 即可）。
 
 ### 4. 如何开启 PHP 性能加速（Opcache & JIT）？
+新建 `/etc/php/8.1/fpm/conf.d/10-opcache-tuning.ini`：
 ```ini
 opcache.enable=1
+opcache.enable_cli=0
 opcache.memory_consumption=256
-opcache.interned_strings_buffer=16
+opcache.interned_strings_buffer=32
 opcache.max_accelerated_files=20000
-opcache.jit_buffer_size=100M
+opcache.validate_timestamps=1
+opcache.revalidate_freq=2
+opcache.fast_shutdown=1
+opcache.save_comments=1
 opcache.jit=tracing
+opcache.jit_buffer_size=128M
+```
+再调高 PHP-FPM 并发：
+```ini
+; /etc/php/8.1/fpm/pool.d/www.conf
+pm = dynamic
+pm.max_children = 20
+pm.start_servers = 4
+pm.min_spare_servers = 2
+pm.max_spare_servers = 6
+pm.max_requests = 500
 ```
 
-### 5. SEO / 分享卡
+### 5. 如何启用 OpenResty HTML 微缓存？
+在 `http {}` 块加：
+```nginx
+fastcgi_cache_path /var/cache/nginx_fcgi levels=1:2 keys_zone=microcache:32m
+                   max_size=512m inactive=10m use_temp_path=off;
+fastcgi_cache_key  "$scheme$request_method$host$request_uri";
+fastcgi_cache_use_stale error timeout updating;
+fastcgi_cache_lock on;
+fastcgi_cache_background_update on;
+```
+在 `location ~ ^/index\.php` 内：
+```nginx
+set $skip_cache 0;
+if ($request_method != GET)                          { set $skip_cache 1; }
+if ($http_cookie ~* "ydxred_session|laravel_session|remember_") { set $skip_cache 1; }
+if ($request_uri ~* "/admin|/login|/logout|/profile|/likes/status|/like/") { set $skip_cache 1; }
+fastcgi_cache microcache;
+fastcgi_cache_valid 200 30s;
+fastcgi_cache_bypass $skip_cache;
+fastcgi_no_cache     $skip_cache;
+fastcgi_ignore_headers Cache-Control Expires Set-Cookie Vary;
+fastcgi_hide_header Set-Cookie;
+add_header X-Cache-Status $upstream_cache_status always;
+```
+
+### 6. 如何启用 WebP 内容协商？
+**应用层**：上传图后自动生成 `.webp` sidecar（项目已内置，见 `App\Services\ImageOptimizer`）。批量回填存量：
+```bash
+php artisan images:webp
+# 或指定目录
+php artisan images:webp articles,posts,uploads
+```
+**Nginx 端**：
+```nginx
+location ~* ^/storage/.*\.(jpe?g|png)$ {
+    add_header Vary "Accept" always;
+    expires 90d;
+    set $webp_real "";
+    if ($http_accept ~* "image/webp")     { set $webp_real "A"; }
+    if (-f $request_filename.webp)         { set $webp_real "${webp_real}B"; }
+    if ($webp_real = "AB")                 { rewrite ^(.+)$ $1.webp last; }
+    try_files $uri =404;
+}
+```
+
+### 7. SEO / 分享卡
 - 默认 OG 卡在 `public/og-default.png`，可换成自己的 1200×630 图。
 - 文章详情自动生成 `BlogPosting` JSON-LD；列表 / 详情都有完整 `og:*` 与 `twitter:card`。
 
-### 6. 想做 HTTPS + CDN 加速？
+### 8. 想做 HTTPS + CDN 加速？
 推荐 Let's Encrypt + Cloudflare 免费方案（接入 Cloudflare 后回源用 OpenResty 即可），续签可用 acme.sh / certbot。
+
+### 9. 性能基线（参考）
+| 指标 | 优化前 | 优化后 |
+|---|---|---|
+| 源站 TTFB（文章详情） | ~80 ms | **9–13 ms** |
+| `/build/*.js` Cache-Control | 30 d | **1 y immutable** |
+| 大 PNG 实际下载（支持 webp） | 174 KB | **70 KB（-60%）** |
+| Google Fonts 跨墙依赖 | 有 | **无（本地化）** |
+| OPcache 命中率 | 默认 | >95% + JIT |
+| FPM 并发上限 | 5 | **20** |
 
 ---
 
