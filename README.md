@@ -54,9 +54,10 @@
 
 ### 9. 性能加速 ⚡
 - **HTML 微缓存**：OpenResty `fastcgi_cache` 缓存游客 GET 请求 30 秒，TTFB 从 ~80 ms → **~9 ms**（命中后纯 nginx 响应，零 PHP）。`/admin`、`/login`、有 `*_session` cookie 的请求自动 BYPASS。
+- **Brotli 压缩**：OpenResty 自编译 `ngx_brotli` 静态模块，HTML 比 gzip 再小 **~20%**。客户端按 `Accept-Encoding` 自动协商 br / gzip / identity。
 - **图片 WebP 协商**：上传时同步生成 `.webp` sidecar，nginx 根据 `Accept: image/webp` 自动协商，对应 png/jpg **节省 ~60% 带宽**（174 KB → 70 KB 实测）。
 - **Vite 哈希资源 1 年 immutable**：`/build/*.js|css|woff2` 设 `Cache-Control: public, max-age=31536000, immutable`。
-- **OPcache 256 MB + JIT tracing 128 MB**、`realpath_cache 4M`。
+- **PHP 8.3 + OPcache 256 MB + JIT tracing 128 MB**、`realpath_cache 4M`。
 - **PHP-FPM dynamic**：`max_children=20` `start_servers=4` `max_requests=500`，应对 4 倍并发。
 - **浏览统计异步化**：`dispatchAfterResponse` 在响应发完后再写库，TTFB 不受影响。
 
@@ -64,9 +65,9 @@
 
 ## 🚀 环境要求
 
-* PHP >= 8.1（推荐 8.3）
+* **PHP 8.3**（推荐，启用 OPcache + JIT；本仓库与 8.1+ 全兼容）
 * MySQL >= 5.7（或 MariaDB >= 10.3）
-* Nginx / OpenResty / Apache
+* Nginx / OpenResty / Apache（OpenResty + `ngx_brotli` 可获最佳压缩）
 * Composer 2.x
 * **Node.js >= 18 & NPM**（生产部署也必须，前端要 `npm run build` 一次）
 
@@ -365,10 +366,46 @@ location ~* ^/storage/.*\.(jpe?g|png)$ {
 |---|---|---|
 | 源站 TTFB（文章详情） | ~80 ms | **9–13 ms** |
 | `/build/*.js` Cache-Control | 30 d | **1 y immutable** |
+| HTML 压缩（同一页面） | gzip 2080 B | **brotli 1844 B（-20%）** |
 | 大 PNG 实际下载（支持 webp） | 174 KB | **70 KB（-60%）** |
 | Google Fonts 跨墙依赖 | 有 | **无（本地化）** |
+| PHP 版本 | 8.1 | **8.3 + JIT tracing 128 MB** |
 | OPcache 命中率 | 默认 | >95% + JIT |
 | FPM 并发上限 | 5 | **20** |
+
+### 10. 安装 Brotli（OpenResty 自编译）
+Brotli 模块需要静态编译进 nginx。简化步骤：
+```bash
+# 1) 装 brotli 系统库 + 编译依赖
+sudo apt install -y libbrotli-dev libpcre3-dev libssl-dev zlib1g-dev
+
+# 2) 下载与现有 OpenResty 同版本的源码（自行替换版本号）
+cd /usr/local/src
+wget https://openresty.org/download/openresty-1.29.2.4.tar.gz
+tar xf openresty-1.29.2.4.tar.gz
+git clone --depth 1 --recurse-submodules https://github.com/google/ngx_brotli
+
+# 3) 用与原 nginx -V 一致的 configure 参数 + 追加 brotli
+cd openresty-1.29.2.4
+./configure --prefix=/usr/local/openresty --add-module=../ngx_brotli \
+  --with-http_ssl_module --with-http_v2_module --with-http_realip_module \
+  --with-pcre-jit --with-file-aio --with-threads ...   # 保留原有全部 --with-*
+gmake -j$(nproc)
+
+# 4) 用 mv 替换运行中的 binary（rename 操作 inode-safe）
+sudo mv /usr/local/openresty/nginx/sbin/nginx{,.bak}
+sudo cp build/nginx-*/objs/nginx /usr/local/openresty/nginx/sbin/nginx
+sudo systemctl restart openresty
+```
+nginx.conf 在 `http {}` 块加：
+```nginx
+brotli on;
+brotli_comp_level 5;
+brotli_min_length 256;
+brotli_static on;
+brotli_types text/plain text/css text/xml application/javascript application/json
+             application/xml font/woff font/woff2 image/svg+xml;
+```
 
 ---
 
