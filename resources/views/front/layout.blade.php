@@ -79,7 +79,7 @@
 
     @yield('hero')
 
-    <main class="max-w-5xl mx-auto w-full px-4 sm:px-5 py-8 sm:py-10 flex-1 relative z-10">
+    <main class="max-w-6xl mx-auto w-full px-4 sm:px-5 py-8 sm:py-10 flex-1 relative z-10">
         @if(session('success'))
             <div class="mb-6 rounded-xl border border-emerald-200/80 bg-emerald-50/90 text-emerald-900 px-4 py-3 text-sm shadow-sm backdrop-blur-sm">
                 {{ session('success') }}

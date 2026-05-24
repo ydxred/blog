@@ -4,6 +4,7 @@
 
 @section('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css">
 <style>
     /* TOC Styles */
     #toc ul { list-style: none; padding-left: 1rem; }
@@ -13,17 +14,20 @@
     #toc a:hover { color: #4f46e5; }
     #toc .is-active-link { color: #4f46e5; font-weight: 600; }
     #toc .is-collapsed { display: none; }
-    /* Code Copy */
-    .prose pre { position: relative; }
-    .prose pre code { background: transparent; padding: 0; color: inherit; font-weight: normal; }
-    .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; padding: 0.25rem 0.5rem; background: rgba(255,255,255,0.1); border-radius: 0.375rem; color: #e2e8f0; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.2); opacity: 0; }
+    /* Code Block */
+    .prose pre { position: relative; margin: 1.25rem 0; }
+    .prose pre code.hljs { display:block; padding: 1.1rem 1.25rem; background: transparent; color: #abb2bf; font-size: 0.9em; line-height: 1.6; overflow-x: auto; }
+    .prose pre { background: #282c34 !important; }
+    .code-lang-tag { position: absolute; top: 0.5rem; left: 0.75rem; padding: 0.1rem 0.55rem; background: rgba(255,255,255,0.06); border-radius: 0.375rem; color: #94a3b8; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+    .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; padding: 0.2rem 0.6rem; background: rgba(255,255,255,0.06); border-radius: 0.375rem; color: #cbd5e1; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1); opacity: 0; }
     .prose pre:hover .copy-btn { opacity: 1; }
-    .copy-btn:hover { background: rgba(255,255,255,0.2); }
+    .copy-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .prose hr { border: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(99,102,241,0.4), transparent); margin: 2.5rem 0; }
 </style>
 @endsection
 
 @section('content')
-<div class="flex flex-col lg:flex-row gap-8 max-w-5xl mx-auto items-start">
+<div class="flex flex-col lg:flex-row gap-8 max-w-6xl mx-auto items-start">
     <div class="flex-1 min-w-0 w-full">
         <div class="mb-6">
         <a href="{{ route('home') }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-stone-500 hover:text-indigo-600 transition-colors bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full ring-1 ring-stone-200/80 hover:ring-indigo-300">
@@ -76,11 +80,12 @@
         <div class="prose prose-slate prose-lg max-w-none
                     prose-headings:font-title prose-headings:font-bold prose-headings:text-slate-800
                     prose-a:text-indigo-600 hover:prose-a:text-indigo-500
-                    prose-code:text-violet-600 prose-code:bg-slate-100/80 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:font-medium
-                    prose-pre:bg-slate-900 prose-pre:text-slate-50 prose-pre:shadow-sm prose-pre:p-4
+                    prose-code:text-violet-600 prose-code:bg-slate-100/80 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:font-medium prose-code:before:hidden prose-code:after:hidden
+                    prose-pre:bg-slate-900 prose-pre:text-slate-50 prose-pre:shadow-sm prose-pre:p-0 prose-pre:my-4 prose-pre:rounded-xl prose-pre:overflow-hidden
                     prose-img:rounded-xl prose-img:ring-1 prose-img:ring-slate-200/60
-                    prose-blockquote:border-l-indigo-400 prose-blockquote:bg-indigo-50/50 prose-blockquote:py-1 prose-blockquote:pr-4 prose-blockquote:rounded-r-lg prose-blockquote:text-slate-600 prose-blockquote:not-italic">
-            {!! \Illuminate\Support\Str::markdown($article->content) !!}
+                    prose-blockquote:border-l-indigo-400 prose-blockquote:bg-indigo-50/50 prose-blockquote:py-1 prose-blockquote:pr-4 prose-blockquote:rounded-r-lg prose-blockquote:text-slate-600 prose-blockquote:not-italic
+                    prose-table:text-sm prose-th:bg-slate-50 prose-th:font-semibold">
+            {!! \App\Services\MarkdownRenderer::toHtml($article->content) !!}
         </div>
 
         <div class="mt-12 pt-6 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -163,7 +168,7 @@
     </section>
     </div>
     
-    <aside class="hidden lg:block w-64 shrink-0 sticky top-20">
+    <aside class="hidden lg:block w-72 shrink-0 sticky top-20">
         <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-5 shadow-sm ring-1 ring-slate-200/80">
             <h3 class="font-bold text-slate-800 mb-3 text-sm flex items-center gap-2">
                 <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
@@ -178,13 +183,12 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.21.0/tocbot.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Fancybox
     Fancybox.bind('[data-fancybox="gallery"]', {
         groupAll: true,
     });
-    // Wrap images in a tags dynamically for Fancybox
     document.querySelectorAll('.prose img').forEach(img => {
         const a = document.createElement('a');
         a.href = img.src;
@@ -193,7 +197,6 @@ document.addEventListener('DOMContentLoaded', function() {
         a.appendChild(img);
     });
 
-    // 2. TOC
     const content = document.querySelector('.prose');
     if (content) {
         const headings = content.querySelectorAll('h2, h3, h4');
@@ -214,16 +217,30 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 3. Code Copy
+    document.querySelectorAll('.prose pre code').forEach(block => {
+        try { hljs.highlightElement(block); } catch (e) {}
+    });
+
     document.querySelectorAll('.prose pre').forEach(pre => {
+        const code = pre.querySelector('code');
+        if (code && code.className) {
+            const m = code.className.match(/language-(\w+)/);
+            if (m) {
+                const tag = document.createElement('span');
+                tag.className = 'code-lang-tag';
+                tag.textContent = m[1];
+                pre.appendChild(tag);
+            }
+        }
+
         const btn = document.createElement('button');
         btn.className = 'copy-btn';
         btn.textContent = '复制';
         pre.appendChild(btn);
 
         btn.addEventListener('click', () => {
-            const code = pre.querySelector('code').innerText;
-            navigator.clipboard.writeText(code).then(() => {
+            const text = (code ? code.innerText : pre.innerText);
+            navigator.clipboard.writeText(text).then(() => {
                 btn.textContent = '已复制!';
                 setTimeout(() => btn.textContent = '复制', 2000);
             });
