@@ -1,6 +1,5 @@
 /.phpunit.cache
 /node_modules
-/public/build
 /public/hot
 /public/storage
 /storage/*.key
@@ -17,5 +16,45 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-blog.zip
-deploy.zip
+
+# 框架运行时
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/cache/data/*
+!/storage/framework/cache/data/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
+
+# 临时打包 / 部署产物
+*.zip
+*.tar.gz
+*.tar
+/public/build
+
+# 一次性运维 / 调试脚本（仓库不入）
+/deploy_*.py
+/deploy_*.sh
+/check_*.py
+/check_*.sh
+/get_*.py
+/get_*.php
+/reload_*.py
+/red_team_audit.py
+/harden*.sh
+/anti_cc.sh
+/upgrade_openresty.sh
+/setup_*.py
+/fix_article.php
+/test_nginx.conf
+/openresty.service
+/nginx_hardened.conf
+/cookies.txt
+/waf*.lua
+/deep_waf_cc.lua
+
+# Github CLI 安装临时
+/gh-keyring.gpg
+/gh.list
+/gh_*_linux_*.tar.gz
