@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\ArticleVisitController;
 use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\TagController;
@@ -72,6 +73,10 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::delete('/comments/{comment}', [AdminCommentController::class, 'destroy'])->name('comments.destroy');
 
     Route::get('/visits', [ArticleVisitController::class, 'index'])->name('visits.index');
+
+    // 图片管理（清理未使用的图）
+    Route::get('/media', [MediaController::class, 'index'])->name('media.index');
+    Route::delete('/media', [MediaController::class, 'destroy'])->name('media.destroy');
 
     Route::get('/settings/site', [SettingController::class, 'site'])->name('settings.site');
     Route::post('/settings/site', [SettingController::class, 'updateSite'])->name('settings.site.update');
