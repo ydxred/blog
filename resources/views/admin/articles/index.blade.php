@@ -29,6 +29,7 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">作者</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">标签</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">状态</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">前台展示</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">阅读</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">发布时间</th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">操作</th>
@@ -57,6 +58,20 @@
                             <span class="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">草稿</span>
                         @endif
                     </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-2"
+                             x-data="{ on: {{ $article->is_visible ? 'true' : 'false' }}, busy: false, toggle() { if (this.busy) return; this.busy = true; const fd = new FormData(); fd.append('_method', 'PATCH'); fd.append('_token', '{{ csrf_token() }}'); fetch('{{ route('admin.articles.toggle_visible', $article) }}', { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } }).then(r => r.ok ? r.json() : Promise.reject()).then(d => { this.on = d.is_visible; }).catch(() => { window.alert('切换失败，请重试'); }).finally(() => { this.busy = false; }); } }">
+                            <button type="button" role="switch" :aria-checked="on" @click="toggle()" :disabled="busy"
+                                    x-bind:style="{ backgroundColor: on ? '#2563eb' : '#cbd5e1' }"
+                                    style="position:relative;display:inline-flex;align-items:center;flex-shrink:0;width:36px;height:20px;padding:0;border:none;border-radius:9999px;cursor:pointer;transition:background-color .2s;background-color:{{ $article->is_visible ? '#2563eb' : '#cbd5e1' }}">
+                                <span x-bind:style="{ transform: on ? 'translateX(18px)' : 'translateX(2px)' }"
+                                      style="display:inline-block;width:16px;height:16px;background:#fff;border-radius:9999px;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .2s;transform:translateX({{ $article->is_visible ? '18px' : '2px' }})"></span>
+                            </button>
+                            <span class="text-xs select-none" x-bind:style="{ color: on ? '#1d4ed8' : '#9ca3af' }"
+                                  style="color:{{ $article->is_visible ? '#1d4ed8' : '#9ca3af' }}"
+                                  x-text="on ? '展示中' : '已隐藏'">{{ $article->is_visible ? '展示中' : '已隐藏' }}</span>
+                        </div>
+                    </td>
                     <td class="px-6 py-4 text-sm text-gray-500">{{ $article->views_count }}</td>
                     <td class="px-6 py-4 text-sm text-gray-400">
                         {{ $article->published_at ? $article->published_at->format('Y-m-d H:i') : '-' }}
@@ -79,7 +94,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="px-6 py-12 text-center text-gray-400">暂无文章，点击右上角开始写作</td>
+                    <td colspan="9" class="px-6 py-12 text-center text-gray-400">暂无文章，点击右上角开始写作</td>
                 </tr>
             @endforelse
         </tbody>

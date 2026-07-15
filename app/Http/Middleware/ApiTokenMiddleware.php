@@ -16,7 +16,8 @@ class ApiTokenMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $token = $request->header('Authorization') ?: $request->input('api_token');
+        // 仅从 Authorization 头读取，不接受 URL query / body 传 token（避免凭据经日志/历史/Referer 泄露）
+        $token = $request->header('Authorization');
         
         if (!$token) {
             return response()->json(['message' => 'Unauthorized. No API Token provided.'], 401);

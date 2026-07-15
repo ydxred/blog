@@ -42,13 +42,14 @@ class ArticleController extends Controller
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
             'status' => 'required|in:draft,published',
+            'is_visible' => 'nullable|boolean',
         ]);
 
         $slug = Str::slug($validated['title']);
         if (!$slug) {
             $slug = Str::random(8);
         }
-        if (Article::where('slug', $slug)->exists()) {
+        if (Article::withTrashed()->where('slug', $slug)->exists()) {
             $slug .= '-' . Str::random(4);
         }
 
@@ -66,6 +67,7 @@ class ArticleController extends Controller
             'content' => $validated['content'],
             'cover_image' => $coverPath,
             'status' => $validated['status'],
+            'is_visible' => $request->boolean('is_visible'),
             'published_at' => $validated['status'] === 'published' ? now() : null,
         ]);
 
@@ -93,6 +95,7 @@ class ArticleController extends Controller
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
             'status' => 'required|in:draft,published',
+            'is_visible' => 'nullable|boolean',
         ]);
 
         if ($request->hasFile('cover_image')) {
@@ -110,6 +113,7 @@ class ArticleController extends Controller
             'content' => $validated['content'],
             'cover_image' => $validated['cover_image'] ?? $article->cover_image,
             'status' => $validated['status'],
+            'is_visible' => $request->boolean('is_visible'),
             'published_at' => $validated['status'] === 'published' && !$wasPublished ? now() : $article->published_at,
         ]);
 
@@ -118,10 +122,21 @@ class ArticleController extends Controller
         return redirect()->route('admin.articles.index')->with('success', '文章更新成功');
     }
 
+    public function toggleVisible(Request $request, Article $article)
+    {
+        $article->update(['is_visible' => ! $article->is_visible]);
+
+        if ($request->wantsJson()) {
+            return response()->json(['is_visible' => $article->is_visible]);
+        }
+
+        return back()->with('success', $article->is_visible ? '已在前台展示' : '已从前台隐藏');
+    }
+
     public function destroy(Article $article)
     {
         if ($article->cover_image) {
-            Storage::disk('public')->delete($article->cover_image);
+            Storage::disk('public')->delete([$article->cover_image, $article->cover_image . '.webp']);
         }
         $article->delete();
         return back()->with('success', '文章已删除');

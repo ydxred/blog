@@ -30,10 +30,10 @@ class SettingController extends Controller
     {
         $user = auth()->user();
         $wechatAppId = Setting::get('wechat_app_id', '');
-        $wechatAppSecret = Setting::get('wechat_app_secret', '');
+        $wechatSecretSet = Setting::get('wechat_app_secret', '') !== '';
         $wechatAutoSync = Setting::get('wechat_auto_sync', '0');
 
-        return view('admin.settings.api_wechat', compact('user', 'wechatAppId', 'wechatAppSecret', 'wechatAutoSync'));
+        return view('admin.settings.api_wechat', compact('user', 'wechatAppId', 'wechatSecretSet', 'wechatAutoSync'));
     }
 
     public function updateApiWechat(Request $request)
@@ -45,10 +45,37 @@ class SettingController extends Controller
         ]);
 
         Setting::set('wechat_app_id', $request->input('wechat_app_id', ''));
-        Setting::set('wechat_app_secret', $request->input('wechat_app_secret', ''));
+
+        // AppSecret 加密存储；留空表示保留原值，不覆盖
+        $newSecret = (string) $request->input('wechat_app_secret', '');
+        if ($newSecret !== '') {
+            Setting::set('wechat_app_secret', \Illuminate\Support\Facades\Crypt::encryptString($newSecret));
+        }
+
         Setting::set('wechat_auto_sync', $request->input('wechat_auto_sync', '0'));
 
         return back()->with('success', '微信配置已保存');
+    }
+
+    public function site()
+    {
+        $siteTitle = Setting::get('site_title', config('app.name'));
+        $siteTagline = Setting::get('site_tagline', config('app.tagline', '记录文字与日常'));
+
+        return view('admin.settings.site', compact('siteTitle', 'siteTagline'));
+    }
+
+    public function updateSite(Request $request)
+    {
+        $validated = $request->validate([
+            'site_title' => 'nullable|string|max:100',
+            'site_tagline' => 'nullable|string|max:200',
+        ]);
+
+        Setting::set('site_title', $validated['site_title'] ?? '');
+        Setting::set('site_tagline', $validated['site_tagline'] ?? '');
+
+        return back()->with('success', '站点信息已更新');
     }
 
     public function generateApiToken()

@@ -12,21 +12,33 @@ use App\Http\Controllers\Front\CommentController;
 use App\Http\Controllers\Front\ImageController;
 use App\Http\Controllers\Front\PostController;
 use App\Http\Controllers\Front\PageController;
+use App\Http\Controllers\Front\FeedController;
+use App\Http\Controllers\Front\SearchController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 // 首页 = 博客文章列表
 Route::get('/', [ArticleController::class, 'index'])->name('home');
 Route::get('/article/{article:slug}', [ArticleController::class, 'show'])->name('article.show');
-Route::post('/article/{article}/comment', [CommentController::class, 'storeArticleComment'])->name('article.comment');
+Route::post('/article/{article}/comment', [CommentController::class, 'storeArticleComment'])->middleware('throttle:10,1')->name('article.comment');
 
 // 动态（微博）
 Route::get('/moments', [PostController::class, 'index'])->name('moments');
 Route::get('/post/{post}', [PostController::class, 'show'])->name('post.show');
-Route::post('/post/{post}/comment', [CommentController::class, 'storePostComment'])->name('comment.store');
+Route::post('/post/{post}/comment', [CommentController::class, 'storePostComment'])->middleware('throttle:10,1')->name('comment.store');
 
 // 关于我
 Route::get('/about', [PageController::class, 'about'])->name('about');
+
+// 发文 API 文档
+Route::get('/api-docs', [PageController::class, 'apiDocs'])->name('api.docs');
+
+// 订阅 / SEO
+Route::get('/sitemap.xml', [FeedController::class, 'sitemap'])->name('sitemap');
+Route::get('/rss', [FeedController::class, 'rss'])->name('rss');
+
+// 站内搜索
+Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 // 点赞
 Route::post('/like/{type}/{id}', [\App\Http\Controllers\Front\LikeController::class, 'toggle'])->name('like.toggle');
@@ -40,7 +52,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
-    Route::post('/profile/api-token', [ProfileController::class, 'generateApiToken'])->name('profile.api_token');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
@@ -49,6 +60,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('tags', TagController::class)->except('show');
     Route::resource('articles', AdminArticleController::class)->except('show');
+    Route::patch('/articles/{article}/toggle-visible', [AdminArticleController::class, 'toggleVisible'])->name('articles.toggle_visible');
 
     Route::get('/posts', [AdminPostController::class, 'index'])->name('posts.index');
     Route::patch('/posts/{post}/toggle', [AdminPostController::class, 'toggleStatus'])->name('posts.toggle');
@@ -60,6 +72,9 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::delete('/comments/{comment}', [AdminCommentController::class, 'destroy'])->name('comments.destroy');
 
     Route::get('/visits', [ArticleVisitController::class, 'index'])->name('visits.index');
+
+    Route::get('/settings/site', [SettingController::class, 'site'])->name('settings.site');
+    Route::post('/settings/site', [SettingController::class, 'updateSite'])->name('settings.site.update');
 
     Route::get('/settings/about', [SettingController::class, 'editAbout'])->name('settings.about');
     Route::post('/settings/about', [SettingController::class, 'updateAbout'])->name('settings.about.update');

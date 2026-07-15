@@ -16,6 +16,7 @@ class ArticleController extends Controller
         });
 
         $articles = Article::published()
+            ->visible()
             ->with('user', 'tags')
             ->withCount('approvedComments')
             ->when($request->tag, function ($q, $tagSlug) {
@@ -31,7 +32,8 @@ class ArticleController extends Controller
 
     public function show(Request $request, Article $article)
     {
-        if ($article->status !== 'published') {
+        $isAdmin = auth()->check() && auth()->user()->isAdmin();
+        if ($article->status !== 'published' || (!$article->is_visible && !$isAdmin)) {
             abort(404);
         }
 
@@ -59,6 +61,7 @@ class ArticleController extends Controller
         $article->load('user', 'tags', 'approvedComments');
 
         $relatedArticles = Article::published()
+            ->visible()
             ->where('id', '!=', $article->id)
             ->whereHas('tags', function ($q) use ($article) {
                 $q->whereIn('tags.id', $article->tags->pluck('id'));

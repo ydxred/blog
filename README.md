@@ -1,6 +1,10 @@
 # ydxred's Blog
 
-这是一个基于 **Laravel 10** + **Tailwind CSS** + **Alpine.js** + **Vite** 构建的现代化个人博客系统。轻量、美观、响应式、SEO 友好，并提供完整的写作 / 动态 / 评论 / 后台管理 / 自动发布 API 能力。
+这是一个基于 **Laravel 12** + **Tailwind CSS** + **Alpine.js** + **Vite** 构建的现代化个人博客系统。轻量、美观、响应式、SEO 友好、注重安全，提供完整的写作 / 动态 / 评论 / 点赞 / 站内搜索 / RSS / 后台管理 / 自动发布 API 能力。
+
+> 🌐 在线运行：https://www.ydxred.com
+>
+> 📖 完整的开发者视角技术剖析（数据建模 → 发文核心 → 图片管线 → 缓存 → 安全 → 部署）见博客里的《深挖一个 Laravel 个人博客》。
 
 ## ✨ 核心功能
 
@@ -61,11 +65,30 @@
 - **PHP-FPM dynamic**：`max_children=20` `start_servers=4` `max_requests=500`，应对 4 倍并发。
 - **浏览统计异步化**：`dispatchAfterResponse` 在响应发完后再写库，TTFB 不受影响。
 
+### 10. 站内搜索 / RSS / Sitemap
+- **站内搜索**：`/search` 全文搜索标题 / 摘要 / 正文，LIKE 通配符已转义防注入。
+- **RSS 2.0**：`/rss` 输出最近 20 篇公开文章，`<head>` 内置自动发现链接。
+- **Sitemap**：`/sitemap.xml` 收录全部公开文章与标签页，`robots.txt` 指向它。
+
+### 11. 图片处理管线
+- **域名水印**：文章封面与正文内联图右下角自动打半透明域名水印（动态配图、头像不打）。
+- **WebP + 尺寸压缩**：解码前 `getimagesize` 卡像素上限防"解压炸弹"，生成 WebP sidecar，超大边长自动缩放。
+- **多来源封面**：上传文件 / 公网 URL（带 SSRF 防护）/ Base64 三选一。
+
+### 12. 安全加固 🔒
+- **上传白名单**：只认真实图片 magic-bytes（不信扩展名、不信声明的 MIME），SVG / HTML / 任意扩展名一律拒——防存储型 XSS。
+- **SSRF 防护**：下载远程图时校验目标 IP 非私网 / 回环 / 保留段，禁跟随重定向、限定协议。
+- **CSRF + 限流**：全站 CSRF；登录 / 评论 / API 各有节流。
+- **PHP 硬化**：FPM 层 `disable_functions` 禁命令执行族 + 关 FFI（CLI 不受限，`artisan`/`composer` 照常）。
+- **Nginx 层**：`.env` / `.git` / `vendor` 拒；storage 与 webroot 下的 `.php` 均不执行——webshell 落地也跑不起来。
+- **前台展示开关**：文章除草稿 / 发布外，还有独立的"前台可见"开关，管理员可发布但对游客隐藏。
+- **自定义错误页**：404（像素动画）/ 419 / 500 / 503 全部自定义，去掉框架默认页指纹。
+
 ---
 
 ## 🚀 环境要求
 
-* **PHP 8.3**（推荐，启用 OPcache + JIT；本仓库与 8.1+ 全兼容）
+* **PHP 8.2+**（Laravel 12 最低要求；推荐 8.3，启用 OPcache + JIT）
 * MySQL >= 5.7（或 MariaDB >= 10.3）
 * Nginx / OpenResty / Apache（OpenResty + `ngx_brotli` 可获最佳压缩）
 * Composer 2.x
@@ -181,7 +204,7 @@ server {
     error_page 404 /index.php;
 
     location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
     }
@@ -284,7 +307,7 @@ php artisan tinker
 项目自带 `overtrue/pinyin`，中文标题会自动转拼音 slug。如果失效，看是不是 `composer install --no-dev` 时把它当 dev 依赖排除掉了（项目内已设为生产依赖，正常 install 即可）。
 
 ### 4. 如何开启 PHP 性能加速（Opcache & JIT）？
-新建 `/etc/php/8.1/fpm/conf.d/10-opcache-tuning.ini`：
+新建 `/etc/php/8.3/fpm/conf.d/10-opcache-tuning.ini`：
 ```ini
 opcache.enable=1
 opcache.enable_cli=0
@@ -300,7 +323,7 @@ opcache.jit_buffer_size=128M
 ```
 再调高 PHP-FPM 并发：
 ```ini
-; /etc/php/8.1/fpm/pool.d/www.conf
+; /etc/php/8.3/fpm/pool.d/www.conf
 pm = dynamic
 pm.max_children = 20
 pm.start_servers = 4
@@ -323,14 +346,18 @@ fastcgi_cache_background_update on;
 ```nginx
 set $skip_cache 0;
 if ($request_method != GET)                          { set $skip_cache 1; }
-if ($http_cookie ~* "ydxred_session|laravel_session|remember_") { set $skip_cache 1; }
+if ($http_authorization)                             { set $skip_cache 1; }   # 带 token 的鉴权请求不缓存
+if ($request_uri ~* "^/api/")                        { set $skip_cache 1; }   # /api 私有响应绝不进缓存(否则越权泄露)
+if ($http_cookie ~* "ydxred_session|remember_")      { set $skip_cache 1; }   # 带会话的不缓存
 if ($request_uri ~* "/admin|/login|/logout|/profile|/likes/status|/like/") { set $skip_cache 1; }
 fastcgi_cache microcache;
 fastcgi_cache_valid 200 30s;
 fastcgi_cache_bypass $skip_cache;
 fastcgi_no_cache     $skip_cache;
 fastcgi_ignore_headers Cache-Control Expires Set-Cookie Vary;
-fastcgi_hide_header Set-Cookie;
+# ⚠️ 只在可缓存的匿名响应(skip_cache=0)上剥 Set-Cookie；
+# 千万别用 `fastcgi_hide_header Set-Cookie;` 无条件剥——会把登录用户的会话 Cookie 也剥掉，全站 419。
+if ($skip_cache = 0) { more_clear_headers 'Set-Cookie'; }
 add_header X-Cache-Status $upstream_cache_status always;
 ```
 
@@ -409,4 +436,4 @@ brotli_types text/plain text/css text/xml application/javascript application/jso
 
 ---
 
-*Powered by Laravel 10.*
+*Powered by Laravel 12.*

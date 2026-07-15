@@ -54,8 +54,8 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">开发者密码 (AppSecret)</label>
-                <input type="password" name="wechat_app_secret" value="{{ $wechatAppSecret }}"
-                       class="w-full border-gray-200 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="公众号后台获取的 AppSecret">
+                <input type="password" name="wechat_app_secret" value="" autocomplete="new-password"
+                       class="w-full border-gray-200 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="{{ $wechatSecretSet ? '已配置（加密存储，留空保留原值）' : '公众号后台获取的 AppSecret' }}">
             </div>
 
             <div class="flex items-center gap-3 mt-4">
@@ -76,6 +76,14 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <h3 class="text-lg font-semibold text-gray-800 mb-1">API 调用文档</h3>
         <p class="text-xs text-gray-500 mb-4">所有接口统一返回 JSON，结构为 <code>{success, message, data, errors}</code>。鉴权头部 <code>Authorization: Bearer &lt;Token&gt;</code>，限速 120 次/分钟。</p>
+
+        <a href="{{ route('api.docs') }}" target="_blank" rel="noopener"
+           class="inline-flex items-center gap-2 mb-5 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-500 transition-colors">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.247m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.247"/></svg>
+            查看 / 分享完整 API 文档
+            <span class="text-indigo-200 text-xs font-normal">↗ 独立页面 · 一键复制 · 可发给他人</span>
+        </a>
+
         <div class="prose prose-sm max-w-none text-gray-600">
 
             <!-- 接口列表 -->

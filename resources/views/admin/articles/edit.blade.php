@@ -67,6 +67,16 @@
                             <option value="published" {{ old('status', $article->status) === 'published' ? 'selected' : '' }}>已发布</option>
                         </select>
                     </div>
+                    <div class="mb-3">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="hidden" name="is_visible" value="0">
+                            <input type="checkbox" name="is_visible" value="1"
+                                   class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                   {{ old('is_visible', $article->is_visible ? '1' : '0') == '1' ? 'checked' : '' }}>
+                            <span class="text-sm text-gray-600">在前台展示</span>
+                        </label>
+                        <p class="text-xs text-gray-400 mt-1">取消勾选后，文章仍保留，但不在前台列表和详情页显示</p>
+                    </div>
                     @if($article->published_at)
                         <p class="text-xs text-gray-400 mb-3">发布于 {{ $article->published_at->format('Y-m-d H:i') }}</p>
                     @endif

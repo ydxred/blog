@@ -15,4 +15,19 @@ class PageController extends Controller
         
         return view('front.about', compact('content'));
     }
+
+    /**
+     * 发文 API 调用文档（独立静态页，不套前台布局）。
+     */
+    public function apiDocs()
+    {
+        return response(
+            file_get_contents(resource_path('docs/api-docs.html')),
+            200,
+            [
+                'Content-Type' => 'text/html; charset=UTF-8',
+                'X-Robots-Tag' => 'noindex, nofollow',
+            ]
+        );
+    }
 }

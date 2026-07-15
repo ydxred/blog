@@ -28,9 +28,11 @@ window.postForm = function () {
             const newFiles = Array.from(event.target.files);
             for (let i = 0; i < newFiles.length && this.files.length < 15; i++) {
                 const file = newFiles[i];
+                const idx = this.files.length; // 先占位，保证 previews 与 files 索引严格对齐（避免异步 onload 乱序删错图）
                 this.files.push(file);
+                this.previews.push('');
                 const reader = new FileReader();
-                reader.onload = (e) => this.previews.push(e.target.result);
+                reader.onload = (e) => this.previews.splice(idx, 1, e.target.result);
                 reader.readAsDataURL(file);
             }
             this.syncFileInput();
@@ -105,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 while (temp.firstElementChild) {
                     container.appendChild(temp.firstElementChild);
                 }
+                if (window.applyLikeState) window.applyLikeState(container);
                 if (shownCount) {
                     shownCount.textContent = container.querySelectorAll(':scope > article').length;
                 }

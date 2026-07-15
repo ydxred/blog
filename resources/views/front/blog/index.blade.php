@@ -1,6 +1,10 @@
 @extends('front.layout')
 
-@section('title', $currentTag ? '标签：' . $currentTag : '长文与笔记')
+@if($currentTag)
+    @section('title', '标签：' . $currentTag)
+@else
+    @section('titleFull', \App\Models\Setting::get('site_title', '') ?: config('app.name'))
+@endif
 @section('description', '深入的技术探讨、生活感悟以及那些值得长久保留的思考。' . ($currentTag ? '（当前标签：' . $currentTag . '）' : ''))
 
 @section('hero')
@@ -12,6 +16,14 @@
 
 @section('content')
 <div class="max-w-5xl mx-auto">
+    <form action="{{ route('search') }}" method="GET" class="mb-8">
+        <div class="relative max-w-xl">
+            <input type="search" name="q" placeholder="搜索文章…" maxlength="100"
+                   class="w-full rounded-full border-slate-200 bg-white/80 backdrop-blur-sm py-2.5 pl-11 pr-4 text-sm shadow-sm ring-1 ring-slate-200/80 focus:border-blue-400 focus:ring-2 focus:ring-blue-200">
+            <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+        </div>
+    </form>
+
     @if($tags->count())
     <nav class="flex flex-wrap gap-2.5 mb-10" aria-label="标签筛选">
         <a href="{{ route('home') }}"

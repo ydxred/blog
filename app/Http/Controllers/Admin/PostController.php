@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -30,6 +31,12 @@ class PostController extends Controller
 
     public function destroy(Post $post)
     {
+        if ($post->images) {
+            foreach ($post->images as $image) {
+                Storage::disk('public')->delete([$image, $image . '.webp']);
+            }
+        }
+
         $post->delete();
         return back()->with('success', '帖子已删除');
     }

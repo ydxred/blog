@@ -15,34 +15,35 @@ class LikeController extends Controller
         $ip = $request->ip();
 
         if ($type === 'article') {
-            $model = Article::published()->findOrFail($id);
+            $model = Article::published()->visible()->findOrFail($id);
             $modelClass = Article::class;
         } elseif ($type === 'post') {
-            $model = Post::findOrFail($id);
+            $model = Post::published()->findOrFail($id);
             $modelClass = Post::class;
         } else {
             return response()->json(['error' => 'Invalid type'], 400);
         }
 
-        $existingLike = DB::table('likes')
+        $deleted = DB::table('likes')
             ->where('likeable_type', $modelClass)
             ->where('likeable_id', $id)
             ->where('ip_address', $ip)
-            ->first();
+            ->delete();
 
-        if ($existingLike) {
-            DB::table('likes')->where('id', $existingLike->id)->delete();
+        if ($deleted) {
             $model->decrement('likes_count');
             $liked = false;
         } else {
-            DB::table('likes')->insert([
+            $inserted = DB::table('likes')->insertOrIgnore([
                 'likeable_type' => $modelClass,
                 'likeable_id' => $id,
                 'ip_address' => $ip,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            $model->increment('likes_count');
+            if ($inserted) {
+                $model->increment('likes_count');
+            }
             $liked = true;
         }
 

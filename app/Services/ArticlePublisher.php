@@ -84,14 +84,14 @@ class ArticlePublisher
             $updates['title'] = $payload['title'];
             if (!isset($payload['slug'])) {
                 // 标题改了，slug 也跟着重算（除非显式传了）
-                $newSlug = $this->resolveSlug(null, $payload['title']);
+                $newSlug = $this->resolveSlug(null, $payload['title'], $article->id);
                 if ($newSlug !== $article->slug) {
                     $updates['slug'] = $newSlug;
                 }
             }
         }
         if (array_key_exists('slug', $payload) && $payload['slug']) {
-            $updates['slug'] = $this->resolveSlug($payload['slug'], $payload['title'] ?? $article->title);
+            $updates['slug'] = $this->resolveSlug($payload['slug'], $payload['title'] ?? $article->title, $article->id);
         }
 
         if (isset($payload['content'])) {
@@ -162,7 +162,7 @@ class ArticlePublisher
      *   3. 纯 ASCII → Str::slug
      *   4. 重复时自动补 -2/-3 后缀
      */
-    protected function resolveSlug(?string $slug, string $title): string
+    protected function resolveSlug(?string $slug, string $title, ?int $ignoreId = null): string
     {
         if ($slug) {
             $base = Str::slug($slug);
@@ -183,7 +183,9 @@ class ArticlePublisher
 
         $finalSlug = $base;
         $i = 1;
-        while (Article::withTrashed()->where('slug', $finalSlug)->exists()) {
+        while (Article::withTrashed()->where('slug', $finalSlug)
+                ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
+                ->exists()) {
             $i++;
             $finalSlug = $base . '-' . $i;
             if ($i > 100) {
@@ -301,19 +303,21 @@ class ArticlePublisher
      */
     protected function resolveCoverImage(array $payload): ?string
     {
-        $path = null;
+        // UploadedFile 直接落地后自己生成 webp；URL/Base64 两条路径在
+        // downloadImage/saveBase64Image 内部已调 makeWebpSidecar，这里不再重复
+        // （否则会对同一封面打两次水印）。
         if (isset($payload['cover_image']) && $payload['cover_image'] instanceof UploadedFile) {
             $path = $payload['cover_image']->store('articles', 'public');
-        } elseif (!empty($payload['cover_image_url'])) {
-            $path = $this->downloadImage($payload['cover_image_url'], 'articles');
-        } elseif (!empty($payload['cover_image_base64'])) {
-            $path = $this->saveBase64Image($payload['cover_image_base64'], 'articles');
-        }
-
-        if ($path) {
             app(\App\Services\ImageOptimizer::class)->makeWebpSidecar($path);
+            return $path;
         }
-        return $path;
+        if (!empty($payload['cover_image_url'])) {
+            return $this->downloadImage($payload['cover_image_url'], 'articles');
+        }
+        if (!empty($payload['cover_image_base64'])) {
+            return $this->saveBase64Image($payload['cover_image_base64'], 'articles');
+        }
+        return null;
     }
 
     /**
@@ -345,17 +349,61 @@ class ArticlePublisher
     }
 
     /**
+     * SSRF 防护：仅允许 http/https，且目标解析出的所有 IP 都不属于私网/回环/链路本地/保留段。
+     */
+    protected function isSafeRemoteUrl(string $url): bool
+    {
+        $parts = parse_url($url);
+        if (!$parts || empty($parts['scheme']) || empty($parts['host'])) {
+            return false;
+        }
+        if (!in_array(strtolower($parts['scheme']), ['http', 'https'], true)) {
+            return false;
+        }
+        $host = $parts['host'];
+        $ips = [];
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            $ips[] = $host;
+        } else {
+            $v4 = @gethostbynamel($host);
+            if ($v4) {
+                $ips = array_merge($ips, $v4);
+            }
+            foreach (@dns_get_record($host, DNS_AAAA) ?: [] as $rec) {
+                if (!empty($rec['ipv6'])) {
+                    $ips[] = $rec['ipv6'];
+                }
+            }
+        }
+        if (empty($ips)) {
+            return false;
+        }
+        foreach ($ips as $ip) {
+            if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * 下载远程图片到 public storage，返回相对路径。
      * 优先用 cURL（PHP-FPM 出于安全考虑通常会关闭 allow_url_fopen，但 cURL 可用）。
      */
     protected function downloadImage(string $url, string $dir): ?string
     {
+        if (!$this->isSafeRemoteUrl($url)) {
+            \Log::warning("downloadImage blocked by SSRF guard", ['url' => $url]);
+            return null;
+        }
+
         try {
             if (function_exists('curl_init')) {
                 $ch = curl_init($url);
                 curl_setopt_array($ch, [
                     CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_FOLLOWLOCATION => false,
+                    CURLOPT_PROTOCOLS      => CURLPROTO_HTTP | CURLPROTO_HTTPS,
                     CURLOPT_MAXREDIRS      => 5,
                     CURLOPT_TIMEOUT        => 20,
                     CURLOPT_CONNECTTIMEOUT => 10,
@@ -411,21 +459,19 @@ class ArticlePublisher
      */
     protected function saveBase64Image(string $base64, string $dir): ?string
     {
-        if (preg_match('/^data:image\/(\w+);base64,(.+)$/i', $base64, $m)) {
-            $ext = strtolower($m[1]);
-            $data = base64_decode($m[2], true);
+        // 剥掉可能的 data-URI 前缀，但【不信任】其声明的 mediatype——
+        // 一律按解码后的真实 magic-bytes 判定类型，防止 data:image/svg / data:image/html 绕过白名单。
+        if (preg_match('/^data:[^;,]*;base64,(.+)$/is', $base64, $m)) {
+            $data = base64_decode($m[1], true);
         } else {
             $data = base64_decode($base64, true);
-            $ext = $data !== false ? $this->guessImageExt($data, '') : null;
         }
-        if (!$data || !$ext) {
+        if ($data === false || strlen($data) > 50 * 1024 * 1024) {
             return null;
         }
-        if (strlen($data) > 50 * 1024 * 1024) {
+        $ext = $this->guessImageExt($data, '');
+        if (!$ext) {
             return null;
-        }
-        if ($ext === 'jpeg') {
-            $ext = 'jpg';
         }
         $filename = $dir . '/' . date('Y/m') . '/' . Str::random(20) . '.' . $ext;
         Storage::disk('public')->put($filename, $data);
@@ -438,17 +484,13 @@ class ArticlePublisher
      */
     protected function guessImageExt(string $data, string $url): ?string
     {
+        // 只认位图 magic-bytes。不支持 SVG、也不再凭 URL 后缀猜类型——
+        // 否则可把含 <script> 的 SVG/HTML 当"图片"落地到同源 storage，构成存储型 XSS。
         $sig = substr($data, 0, 12);
         if (str_starts_with($sig, "\xFF\xD8\xFF")) return 'jpg';
         if (str_starts_with($sig, "\x89PNG\r\n\x1A\n")) return 'png';
         if (str_starts_with($sig, "GIF87a") || str_starts_with($sig, "GIF89a")) return 'gif';
         if (str_starts_with($sig, "RIFF") && substr($data, 8, 4) === 'WEBP') return 'webp';
-        if (str_starts_with(ltrim($sig), '<svg') || str_starts_with(ltrim($sig), '<?xml')) return 'svg';
-
-        $urlExt = strtolower(pathinfo(parse_url($url, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
-        if (in_array($urlExt, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'])) {
-            return $urlExt === 'jpeg' ? 'jpg' : $urlExt;
-        }
         return null;
     }
 }

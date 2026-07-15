@@ -5,6 +5,25 @@
  *   - GET  /likes/status 返回 {posts:[...], articles:[...]}
  *   - POST /like/{type}/{id} 返回 {liked, likes_count}
  */
+// 已点赞状态缓存 + 回填（供「加载更多」注入的新内容复用）
+let likeStatus = null;
+
+function applyLikeState(root) {
+    if (!likeStatus) return;
+    (root || document).querySelectorAll('.like-btn').forEach((btn) => {
+        if (btn.dataset.likeRestored) return;
+        const type = btn.dataset.type;
+        const id = btn.dataset.id;
+        const list = likeStatus[type + 's'] || [];
+        // 后端 likeable_id 可能是字符串或数字，统一按字符串比较，避免 "13" !== 13 漏回填
+        if (Array.isArray(list) && list.some((v) => String(v) === String(id))) {
+            markLiked(btn, true);
+        }
+        btn.dataset.likeRestored = '1';
+    });
+}
+window.applyLikeState = applyLikeState;
+
 function initLikes() {
     const csrfMeta = document.querySelector('meta[name="csrf-token"]');
     if (!csrfMeta) return;
@@ -14,14 +33,8 @@ function initLikes() {
     fetch('/likes/status', { headers: { Accept: 'application/json' } })
         .then((r) => r.json())
         .then((data) => {
-            document.querySelectorAll('.like-btn').forEach((btn) => {
-                const type = btn.dataset.type;
-                const id = parseInt(btn.dataset.id, 10);
-                const list = data[type + 's'] || [];
-                if (Object.values(list).includes(id)) {
-                    markLiked(btn, true);
-                }
-            });
+            likeStatus = data;
+            applyLikeState(document);
         })
         .catch(() => {});
 

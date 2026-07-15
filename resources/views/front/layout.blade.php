@@ -6,7 +6,13 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- ----- 标题 ----- --}}
-    <title>@hasSection('title')@yield('title') | {{ config('app.name') }}@else{{ config('app.name') }} · {{ config('app.tagline', '记录文字与日常') }}@endif</title>
+    @php
+        $siteTitle   = trim((string) \App\Models\Setting::get('site_title', '')) ?: config('app.name');
+        $siteTagline = trim((string) \App\Models\Setting::get('site_tagline', '')) ?: config('app.tagline', '记录文字与日常');
+        $__tf = trim($__env->yieldContent('titleFull'));
+        $__t  = trim($__env->yieldContent('title'));
+    @endphp
+    <title>{{ $__tf !== '' ? $__tf : ($__t !== '' ? $__t.' | '.$siteTitle : $siteTitle.' · '.$siteTagline) }}</title>
 
     {{-- ----- SEO meta ----- --}}
     @php
@@ -22,10 +28,10 @@
     <link rel="canonical" href="{{ $canonical }}">
 
     {{-- Open Graph --}}
-    <meta property="og:site_name" content="{{ config('app.name') }}">
+    <meta property="og:site_name" content="{{ $siteTitle }}">
     <meta property="og:type" content="{{ $ogType }}">
     <meta property="og:url" content="{{ $canonical }}">
-    <meta property="og:title" content="@hasSection('title')@yield('title')@else{{ config('app.name') }}@endif">
+    <meta property="og:title" content="{{ $__t !== '' ? $__t : $siteTitle }}">
     <meta property="og:description" content="{{ $metaDescription }}">
     @if($metaImage)
         <meta property="og:image" content="{{ $metaImage }}">
@@ -34,7 +40,7 @@
 
     {{-- Twitter Card --}}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="@hasSection('title')@yield('title')@else{{ config('app.name') }}@endif">
+    <meta name="twitter:title" content="{{ $__t !== '' ? $__t : $siteTitle }}">
     <meta name="twitter:description" content="{{ $metaDescription }}">
     @if($metaImage)
         <meta name="twitter:image" content="{{ $metaImage }}">
@@ -43,8 +49,14 @@
     {{-- favicon --}}
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 
+    {{-- RSS 订阅发现 --}}
+    <link rel="alternate" type="application/rss+xml" title="{{ $siteTitle }} RSS" href="{{ url('/rss') }}">
+
     {{-- DNS 提前预热（Cloudflare） --}}
     <link rel="dns-prefetch" href="//www.ydxred.com">
+
+    {{-- Google AdSense --}}
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5291388970403234" crossorigin="anonymous"></script>
 
     {{-- 全局 CSS + JS（vite 自动生成 preload 资源链） --}}
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/likes.js'])
@@ -61,7 +73,7 @@
                     <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-sm transition-shadow group-hover:shadow-md" aria-hidden="true">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </span>
-                    <span class="truncate group-hover:text-indigo-600 transition-colors">{{ config('app.name') }}</span>
+                    <span class="truncate group-hover:text-indigo-600 transition-colors">{{ $siteTitle }}</span>
                 </a>
                 <nav class="hidden sm:flex items-center gap-1.5 text-sm" aria-label="主导航">
                     <a href="{{ route('home') }}"
@@ -122,7 +134,7 @@
             <div class="max-w-6xl mx-auto px-4 sm:px-5">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                     <div>
-                        <p class="font-title text-lg text-indigo-900/80">{{ config('app.name') }}</p>
+                        <p class="font-title text-lg text-indigo-900/80">{{ $siteTitle }}</p>
                         <p class="text-sm text-slate-500 mt-1">记录文字与日常</p>
                     </div>
                     <nav class="flex flex-wrap gap-x-6 gap-y-2 text-sm" aria-label="页脚导航">
@@ -138,8 +150,8 @@
                     </nav>
                 </div>
                 <div class="mt-8 pt-6 border-t border-slate-200/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
-                    <p>&copy; {{ date('Y') }} {{ config('app.name') }}</p>
-                    <p><a href="https://laravel.com" class="hover:text-blue-500 transition-colors" rel="noopener">Laravel</a></p>
+                    <p>&copy; {{ date('Y') }} {{ $siteTitle }}</p>
+                    <p><a href="{{ url('/rss') }}" class="hover:text-blue-500 transition-colors">RSS 订阅</a></p>
                 </div>
             </div>
         </div>

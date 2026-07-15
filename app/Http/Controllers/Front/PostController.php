@@ -88,7 +88,7 @@ class PostController extends Controller
 
         if ($post->images) {
             foreach ($post->images as $image) {
-                Storage::disk('public')->delete($image);
+                Storage::disk('public')->delete([$image, $image . '.webp']);
             }
         }
 

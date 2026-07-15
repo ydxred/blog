@@ -66,6 +66,16 @@
                             <option value="published" {{ old('status') === 'published' ? 'selected' : '' }}>立即发布</option>
                         </select>
                     </div>
+                    <div class="mb-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="hidden" name="is_visible" value="0">
+                            <input type="checkbox" name="is_visible" value="1"
+                                   class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                   {{ old('is_visible', '1') == '1' ? 'checked' : '' }}>
+                            <span class="text-sm text-gray-600">在前台展示</span>
+                        </label>
+                        <p class="text-xs text-gray-400 mt-1">取消勾选后，文章仍保留，但不在前台列表和详情页显示</p>
+                    </div>
                     <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium">
                         保存文章
                     </button>
