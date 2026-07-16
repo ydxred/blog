@@ -1,0 +1,86 @@
+/* CSDN / 简书 风格代码块：圆角卡片 + 顶部栏（三色点 + 语言 + 复制）
+   仅由 article.js import，作用于文章详情页 .prose 内的代码块。 */
+
+.prose .cb {
+    margin: 1.4rem 0;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #282c34;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.13);
+}
+
+.cb-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.9rem;
+    background: #21252b;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    user-select: none;
+}
+
+.cb-dots {
+    display: inline-flex;
+    gap: 0.42rem;
+}
+.cb-dots i {
+    display: block;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+}
+.cb-dots i:nth-child(1) { background: #ff5f56; }
+.cb-dots i:nth-child(2) { background: #ffbd2e; }
+.cb-dots i:nth-child(3) { background: #27c93f; }
+
+.cb-lang {
+    color: #8b949e;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.cb-copy {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.34rem;
+    padding: 0.26rem 0.62rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #cbd5e1;
+    font-size: 0.74rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.cb-copy:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+}
+.cb-copy.done {
+    color: #27c93f;
+    border-color: rgba(39, 201, 63, 0.4);
+}
+.cb-copy svg {
+    flex-shrink: 0;
+}
+
+/* 代码区：去掉 .prose pre 原有的圆角/外边距/独立底色，全交给 .cb 卡片 */
+.prose .cb pre {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+}
+.prose .cb pre code.hljs {
+    display: block;
+    padding: 1rem 1.15rem;
+    background: transparent;
+    color: #abb2bf;
+    font-size: 0.88em;
+    line-height: 1.65;
+    overflow-x: auto;
+}

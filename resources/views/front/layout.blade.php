@@ -64,6 +64,27 @@
     {{-- 页面级 meta、JSON-LD、额外样式 --}}
     @stack('head')
     @yield('styles')
+
+    {{-- 移动端微调(≤640px):触控目标≥40px + 代码块字号加大 --}}
+    <style>
+    @media (max-width: 640px) {
+        nav[aria-label="移动端导航"] a,
+        nav[aria-label="标签筛选"] a,
+        nav[aria-label="页脚导航"] a,
+        header form button,
+        header a[href$="/login"],
+        header a[href*="/admin"] {
+            min-height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        nav[aria-label="标签筛选"] a { padding-top: .5rem; padding-bottom: .5rem; }
+        /* 代码块头部语言标签/复制按钮字号加大;用 .cb-head 提高特异性,盖过外链 article-code.css */
+        .cb-head .cb-lang { font-size: .78rem; }
+        .cb-head .cb-copy { font-size: .8rem; }
+    }
+    </style>
 </head>
 <body class="min-h-screen flex flex-col bg-page text-slate-800 antialiased">
     <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md shadow-sm">
@@ -92,7 +113,7 @@
                 </nav>
                 @auth
                     @if(auth()->user()->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" class="hidden sm:inline text-xs text-stone-400 hover:text-violet-600 transition-colors">后台</a>
+                        <a href="{{ route('admin.dashboard') }}" class="text-xs text-stone-400 hover:text-violet-600 transition-colors">后台</a>
                     @endif
                     <a href="{{ route('profile.edit') }}" class="flex items-center ring-2 ring-amber-200/70 rounded-full" aria-label="个人资料">
                         <x-avatar :user="auth()->user()" size="w-8 h-8" text="text-xs" />
@@ -110,7 +131,7 @@
 
     @yield('hero')
 
-    <main class="max-w-6xl mx-auto w-full px-4 sm:px-5 py-8 sm:py-10 flex-1 relative z-10">
+    <main class="mx-auto w-full px-4 sm:px-5 py-8 sm:py-10 flex-1 relative z-10" style="max-width: @yield('main_max', '72rem')">
         @if(session('success'))
             <div class="mb-6 rounded-xl border border-emerald-200/80 bg-emerald-50/90 text-emerald-900 px-4 py-3 text-sm shadow-sm backdrop-blur-sm" role="status">
                 {{ session('success') }}

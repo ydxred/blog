@@ -1,13 +1,17 @@
 /**
- * 文章详情页：highlight.js + tocbot + fancybox + 代码块复制按钮
+ * 文章详情页：highlight.js + tocbot + fancybox + 代码块（CSDN/简书 风格顶部栏 + 复制）
  */
 import { Fancybox } from '@fancyapps/ui';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
 
 import hljs from 'highlight.js/lib/common';
 import 'highlight.js/styles/atom-one-dark.css';
+import '../css/article-code.css';
 
 import tocbot from 'tocbot';
+
+const COPY_ICON =
+    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
 
 document.addEventListener('DOMContentLoaded', () => {
     const content = document.querySelector('.prose');
@@ -41,36 +45,44 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('aside.article-toc').forEach((a) => (a.style.display = 'none'));
     }
 
-    // 3) 代码高亮
-    content.querySelectorAll('pre code').forEach((block) => {
-        try {
-            hljs.highlightElement(block);
-        } catch (_) {}
-    });
-
-    // 4) 代码块：语言标签 + 复制按钮
+    // 3) 代码块：高亮 + 顶部栏（mac 三色点 + 语言 + 复制）
     content.querySelectorAll('pre').forEach((pre) => {
         const code = pre.querySelector('code');
-        if (code && code.className) {
-            const m = code.className.match(/language-(\w+)/);
-            if (m) {
-                const tag = document.createElement('span');
-                tag.className = 'code-lang-tag';
-                tag.textContent = m[1];
-                pre.appendChild(tag);
-            }
-        }
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'copy-btn';
-        btn.textContent = '复制';
-        btn.setAttribute('aria-label', '复制代码');
-        pre.appendChild(btn);
+        if (!code) return;
+
+        // 语言：高亮前先取，避免被 hljs 改写
+        const m = (code.className || '').match(/language-([\w-]+)/);
+        const lang = m ? m[1] : 'text';
+
+        try {
+            hljs.highlightElement(code);
+        } catch (_) {}
+
+        // 包一层容器 + 顶部栏
+        const wrap = document.createElement('div');
+        wrap.className = 'cb';
+        pre.parentNode.insertBefore(wrap, pre);
+
+        const head = document.createElement('div');
+        head.className = 'cb-head';
+        head.innerHTML =
+            '<span class="cb-dots"><i></i><i></i><i></i></span>' +
+            '<span class="cb-lang"></span>' +
+            '<button type="button" class="cb-copy" aria-label="复制代码">' + COPY_ICON + '<span>复制</span></button>';
+        head.querySelector('.cb-lang').textContent = lang;
+        wrap.appendChild(head);
+        wrap.appendChild(pre);
+
+        const btn = head.querySelector('.cb-copy');
+        const label = btn.querySelector('span');
         btn.addEventListener('click', () => {
-            const text = code ? code.innerText : pre.innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                btn.textContent = '已复制!';
-                setTimeout(() => (btn.textContent = '复制'), 2000);
+            navigator.clipboard.writeText(code.innerText).then(() => {
+                btn.classList.add('done');
+                label.textContent = '已复制';
+                setTimeout(() => {
+                    btn.classList.remove('done');
+                    label.textContent = '复制';
+                }, 2000);
             });
         });
     });

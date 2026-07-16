@@ -7,6 +7,7 @@
     @section('og_image', asset('storage/' . $article->cover_image))
 @endif
 @section('canonical', route('article.show', $article->slug))
+@section('main_max', '84rem')
 
 @push('head')
 {{-- JSON-LD（Article）方便搜索引擎收录 --}}
@@ -37,7 +38,7 @@
 @endpush
 
 @section('content')
-<div class="flex flex-col lg:flex-row gap-8 max-w-6xl mx-auto items-start">
+<div class="flex flex-col lg:flex-row gap-8 items-start">
     <div class="flex-1 min-w-0 w-full">
         <div class="mb-6">
             <x-front.back-link :href="route('home')" label="返回列表" theme="indigo" />
