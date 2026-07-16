@@ -18,6 +18,9 @@ use App\Http\Controllers\Front\SearchController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+// nginx auth_request:doc_wiki 静态知识库的 admin 鉴权闸(仅 200/403,不重定向)
+Route::get('/doc_wiki_auth', [\App\Http\Controllers\DocWikiAuthController::class, 'check']);
+
 // 首页 = 博客文章列表
 Route::get('/', [ArticleController::class, 'index'])->name('home');
 Route::get('/article/{article:slug}', [ArticleController::class, 'show'])->name('article.show');

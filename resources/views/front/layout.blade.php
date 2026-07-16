@@ -101,6 +101,10 @@
                        class="px-4 py-2 rounded-full font-medium transition-all {{ request()->routeIs('home') || request()->routeIs('article.*') ? 'bg-blue-50/80 text-blue-700 ring-1 ring-blue-200/60' : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50/50' }}">博客</a>
                     <a href="{{ route('moments') }}"
                        class="px-4 py-2 rounded-full font-medium transition-all {{ request()->routeIs('moments') || request()->routeIs('post.*') ? 'bg-teal-50/80 text-teal-700 ring-1 ring-teal-200/60' : 'text-slate-600 hover:text-teal-600 hover:bg-teal-50/50' }}">动态</a>
+                    @auth @if(auth()->user()->isAdmin())
+                    <a href="{{ url('/doc_wiki/') }}"
+                       class="px-4 py-2 rounded-full font-medium transition-all text-slate-600 hover:text-violet-600 hover:bg-violet-50/50">wiki</a>
+                    @endif @endauth
                     <a href="{{ route('about') }}"
                        class="px-4 py-2 rounded-full font-medium transition-all {{ request()->routeIs('about') ? 'bg-amber-50/80 text-amber-700 ring-1 ring-amber-200/60' : 'text-slate-600 hover:text-amber-600 hover:bg-amber-50/50' }}">关于我</a>
                 </nav>
@@ -109,6 +113,9 @@
                 <nav class="flex sm:hidden items-center gap-0.5 text-[13px]" aria-label="移动端导航">
                     <a href="{{ route('home') }}" class="px-2 py-1.5 rounded-lg transition-colors {{ request()->routeIs('home') || request()->routeIs('article.*') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-500 hover:text-blue-600' }}">博客</a>
                     <a href="{{ route('moments') }}" class="px-2 py-1.5 rounded-lg transition-colors {{ request()->routeIs('moments') || request()->routeIs('post.*') ? 'bg-teal-50 text-teal-700 font-semibold' : 'text-slate-500 hover:text-teal-600' }}">动态</a>
+                    @auth @if(auth()->user()->isAdmin())
+                    <a href="{{ url('/doc_wiki/') }}" class="px-2 py-1.5 rounded-lg transition-colors text-slate-500 hover:text-violet-600">wiki</a>
+                    @endif @endauth
                     <a href="{{ route('about') }}" class="px-2 py-1.5 rounded-lg transition-colors {{ request()->routeIs('about') ? 'bg-amber-50 text-amber-700 font-semibold' : 'text-slate-500 hover:text-amber-600' }}">关于我</a>
                 </nav>
                 @auth
